@@ -1,0 +1,6 @@
+{
+ "removeTokyoSouthOfLat": 31,
+ "minIslandKm2": 1,
+ "simplifyPercent": "1%",
+ "quantization": 50000
+}

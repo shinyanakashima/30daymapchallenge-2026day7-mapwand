@@ -1,0 +1,11 @@
+node_modules/
+dist/
+data/raw/*
+!data/raw/.gitkeep
+firmware/.pio/
+firmware/build/
+.DS_Store
+*.log
+__pycache__/
+.venv/
+*.tsbuildinfo

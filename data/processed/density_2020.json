@@ -1,0 +1,346 @@
+{
+ "source": "総務省統計局「令和2年国勢調査 人口等基本集計」第1-1表",
+ "statInfId": "000032142402",
+ "url": "https://www.e-stat.go.jp/stat-search/file-download?statInfId=000032142402&fileKind=0",
+ "reference_date": "2020-10-01",
+ "unit": "人/km2",
+ "source_sha256": "91ba30c83013cf2f6efb9fcec8c3496be99b77ab0b800f97441648e9108215ab",
+ "national": {
+  "code": "00",
+  "name": "全国",
+  "population": 126146099,
+  "area_km2": 377976.41,
+  "density": 338.2
+ },
+ "prefectures": [
+  {
+   "code": "01",
+   "name": "北海道",
+   "population": 5224614,
+   "area_km2": 83424.44,
+   "density": 66.6
+  },
+  {
+   "code": "02",
+   "name": "青森県",
+   "population": 1237984,
+   "area_km2": 9645.64,
+   "density": 128.3
+  },
+  {
+   "code": "03",
+   "name": "岩手県",
+   "population": 1210534,
+   "area_km2": 15275.01,
+   "density": 79.2
+  },
+  {
+   "code": "04",
+   "name": "宮城県",
+   "population": 2301996,
+   "area_km2": 7282.29,
+   "density": 316.1
+  },
+  {
+   "code": "05",
+   "name": "秋田県",
+   "population": 959502,
+   "area_km2": 11637.52,
+   "density": 82.4
+  },
+  {
+   "code": "06",
+   "name": "山形県",
+   "population": 1068027,
+   "area_km2": 9323.15,
+   "density": 114.6
+  },
+  {
+   "code": "07",
+   "name": "福島県",
+   "population": 1833152,
+   "area_km2": 13784.14,
+   "density": 133.0
+  },
+  {
+   "code": "08",
+   "name": "茨城県",
+   "population": 2867009,
+   "area_km2": 6097.39,
+   "density": 470.2
+  },
+  {
+   "code": "09",
+   "name": "栃木県",
+   "population": 1933146,
+   "area_km2": 6408.09,
+   "density": 301.7
+  },
+  {
+   "code": "10",
+   "name": "群馬県",
+   "population": 1939110,
+   "area_km2": 6362.28,
+   "density": 304.8
+  },
+  {
+   "code": "11",
+   "name": "埼玉県",
+   "population": 7344765,
+   "area_km2": 3797.75,
+   "density": 1934.0
+  },
+  {
+   "code": "12",
+   "name": "千葉県",
+   "population": 6284480,
+   "area_km2": 5157.57,
+   "density": 1218.5
+  },
+  {
+   "code": "13",
+   "name": "東京都",
+   "population": 14047594,
+   "area_km2": 2194.03,
+   "density": 6402.6
+  },
+  {
+   "code": "14",
+   "name": "神奈川県",
+   "population": 9237337,
+   "area_km2": 2416.11,
+   "density": 3823.2
+  },
+  {
+   "code": "15",
+   "name": "新潟県",
+   "population": 2201272,
+   "area_km2": 12583.96,
+   "density": 174.9
+  },
+  {
+   "code": "16",
+   "name": "富山県",
+   "population": 1034814,
+   "area_km2": 4247.58,
+   "density": 243.6
+  },
+  {
+   "code": "17",
+   "name": "石川県",
+   "population": 1132526,
+   "area_km2": 4186.21,
+   "density": 270.5
+  },
+  {
+   "code": "18",
+   "name": "福井県",
+   "population": 766863,
+   "area_km2": 4190.52,
+   "density": 183.0
+  },
+  {
+   "code": "19",
+   "name": "山梨県",
+   "population": 809974,
+   "area_km2": 4465.27,
+   "density": 181.4
+  },
+  {
+   "code": "20",
+   "name": "長野県",
+   "population": 2048011,
+   "area_km2": 13561.56,
+   "density": 151.0
+  },
+  {
+   "code": "21",
+   "name": "岐阜県",
+   "population": 1978742,
+   "area_km2": 10621.29,
+   "density": 186.3
+  },
+  {
+   "code": "22",
+   "name": "静岡県",
+   "population": 3633202,
+   "area_km2": 7777.35,
+   "density": 467.2
+  },
+  {
+   "code": "23",
+   "name": "愛知県",
+   "population": 7542415,
+   "area_km2": 5173.07,
+   "density": 1458.0
+  },
+  {
+   "code": "24",
+   "name": "三重県",
+   "population": 1770254,
+   "area_km2": 5774.49,
+   "density": 306.6
+  },
+  {
+   "code": "25",
+   "name": "滋賀県",
+   "population": 1413610,
+   "area_km2": 4017.38,
+   "density": 351.9
+  },
+  {
+   "code": "26",
+   "name": "京都府",
+   "population": 2578087,
+   "area_km2": 4612.2,
+   "density": 559.0
+  },
+  {
+   "code": "27",
+   "name": "大阪府",
+   "population": 8837685,
+   "area_km2": 1905.32,
+   "density": 4638.4
+  },
+  {
+   "code": "28",
+   "name": "兵庫県",
+   "population": 5465002,
+   "area_km2": 8401.02,
+   "density": 650.5
+  },
+  {
+   "code": "29",
+   "name": "奈良県",
+   "population": 1324473,
+   "area_km2": 3690.94,
+   "density": 358.8
+  },
+  {
+   "code": "30",
+   "name": "和歌山県",
+   "population": 922584,
+   "area_km2": 4724.65,
+   "density": 195.3
+  },
+  {
+   "code": "31",
+   "name": "鳥取県",
+   "population": 553407,
+   "area_km2": 3507.14,
+   "density": 157.8
+  },
+  {
+   "code": "32",
+   "name": "島根県",
+   "population": 671126,
+   "area_km2": 6707.89,
+   "density": 100.1
+  },
+  {
+   "code": "33",
+   "name": "岡山県",
+   "population": 1888432,
+   "area_km2": 7114.33,
+   "density": 265.4
+  },
+  {
+   "code": "34",
+   "name": "広島県",
+   "population": 2799702,
+   "area_km2": 8479.65,
+   "density": 330.2
+  },
+  {
+   "code": "35",
+   "name": "山口県",
+   "population": 1342059,
+   "area_km2": 6112.54,
+   "density": 219.6
+  },
+  {
+   "code": "36",
+   "name": "徳島県",
+   "population": 719559,
+   "area_km2": 4146.75,
+   "density": 173.5
+  },
+  {
+   "code": "37",
+   "name": "香川県",
+   "population": 950244,
+   "area_km2": 1876.78,
+   "density": 506.3
+  },
+  {
+   "code": "38",
+   "name": "愛媛県",
+   "population": 1334841,
+   "area_km2": 5676.19,
+   "density": 235.2
+  },
+  {
+   "code": "39",
+   "name": "高知県",
+   "population": 691527,
+   "area_km2": 7103.63,
+   "density": 97.3
+  },
+  {
+   "code": "40",
+   "name": "福岡県",
+   "population": 5135214,
+   "area_km2": 4986.51,
+   "density": 1029.8
+  },
+  {
+   "code": "41",
+   "name": "佐賀県",
+   "population": 811442,
+   "area_km2": 2440.69,
+   "density": 332.5
+  },
+  {
+   "code": "42",
+   "name": "長崎県",
+   "population": 1312317,
+   "area_km2": 4130.98,
+   "density": 317.7
+  },
+  {
+   "code": "43",
+   "name": "熊本県",
+   "population": 1738301,
+   "area_km2": 7409.46,
+   "density": 234.6
+  },
+  {
+   "code": "44",
+   "name": "大分県",
+   "population": 1123852,
+   "area_km2": 6340.76,
+   "density": 177.2
+  },
+  {
+   "code": "45",
+   "name": "宮崎県",
+   "population": 1069576,
+   "area_km2": 7735.22,
+   "density": 138.3
+  },
+  {
+   "code": "46",
+   "name": "鹿児島県",
+   "population": 1588256,
+   "area_km2": 9187.06,
+   "density": 172.9
+  },
+  {
+   "code": "47",
+   "name": "沖縄県",
+   "population": 1467480,
+   "area_km2": 2282.59,
+   "density": 642.9
+  }
+ ]
+}
