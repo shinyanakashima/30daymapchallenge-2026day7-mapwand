@@ -131,7 +131,8 @@ export function App() {
       const elapsedMs = timer.startedAt === null ? null : timer.stop();
       const at = new Date();
       const committedScene = buildScene(editor.committed);
-      const png = await sceneToPng(committedScene);
+      const { blob: png, failedTiles } = await sceneToPng(committedScene);
+      if (failedTiles > 0) setNotice(`ベースマップのタイル ${failedTiles} 枚を読み込めず、画像から除いて保存しました`);
       const json = new Blob([JSON.stringify(toSettingsFile(editor.committed, elapsedMs), null, 2)], {
         type: 'application/json',
       });

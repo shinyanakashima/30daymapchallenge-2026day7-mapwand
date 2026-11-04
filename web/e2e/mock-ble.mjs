@@ -115,6 +115,9 @@ let w = await p.evaluate(() => window.__mw.state.writes.length);
 check(w >= 1, `initial state synced (${w} writes)`);
 
 await p.click('text=制作開始');
+check((await nowItem()).includes('データ'), 'first item is DATA');
+await p.evaluate(() => window.__mw.press(1, 1)); // BtnA → スタイル
+await p.waitForTimeout(50);
 // 回転 2 カウント = 1 候補
 await p.evaluate(() => window.__mw.rotate(2));
 await p.waitForTimeout(100);
@@ -141,17 +144,17 @@ check((await nowValue()) === '夜' || (await nowValue()) === '和紙', 'rotate b
 // 短押しで採用 → 次の項目
 await p.evaluate(() => window.__mw.press(3, 1));
 await p.waitForTimeout(100);
-check((await nowItem()).includes('配色'), 'dial short press adopts and moves to COLOR');
+check((await nowItem()).includes('ベースマップ'), 'dial short press adopts and moves to BASE');
 const writes = await p.evaluate(() => window.__mw.state.writes);
 const last = writes[writes.length - 1];
-check(last[0] === 1 && last[1] === 1 && last[4] === 1, `state packet item=1 (${last.slice(0, 9)})`);
+check(last[0] === 1 && last[1] === 1 && last[4] === 2, `state packet item=2 (${last.slice(0, 9)})`);
 // BtnA / BtnB
 await p.evaluate(() => window.__mw.press(1, 1));
 await p.waitForTimeout(50);
-check((await nowItem()).includes('階級'), 'BtnA next item');
+check((await nowItem()).includes('配色'), 'BtnA next item');
 await p.evaluate(() => window.__mw.press(2, 1));
 await p.waitForTimeout(50);
-check((await nowItem()).includes('配色'), 'BtnB prev item');
+check((await nowItem()).includes('ベースマップ'), 'BtnB prev item');
 // 長押しで戻す（プレビュー取り消し）
 await p.evaluate(() => window.__mw.rotate(4));
 await p.waitForTimeout(50);
@@ -164,7 +167,7 @@ check((await nowValue()) !== pv && (await p.textContent('.badge')) === '採用�
 await p.evaluate(() => window.__mw.drop());
 await p.waitForTimeout(100);
 check((await p.textContent('.link')).includes('切断') || (await p.textContent('.link')).includes('再接続'), 'disconnect detected');
-check((await nowItem()).includes('配色'), 'editing state kept after disconnect');
+check((await nowItem()).includes('ベースマップ'), 'editing state kept after disconnect');
 await p.waitForTimeout(3500);
 check((await p.textContent('.link')).includes('接続中のMapWand'), 'auto reconnect');
 await p.evaluate(() => {
@@ -177,9 +180,19 @@ await p.waitForTimeout(300);
 const before = await nowValue();
 await p.evaluate(() => window.__mw.replayOld());
 await p.waitForTimeout(50);
-check((await nowItem()).includes('配色') && (await nowValue()) === before, 'old packets not replayed after reconnect');
+check((await nowItem()).includes('ベースマップ') && (await nowValue()) === before, 'old packets not replayed after reconnect');
 await p.screenshot({ path: `${OUT}/connected.png` });
 
+// ベースマップ（淡色地図）とレイヤー（すべて）を採用してから保存（タイル込みの PNG）
+await p.click('.items li:nth-child(3) button');
+await p.keyboard.press('ArrowRight');
+await p.keyboard.press('Enter');
+await p.click('.items li:nth-child(8) button');
+await p.keyboard.press('ArrowLeft');
+await p.keyboard.press('Enter');
+await p.waitForTimeout(1500);
+check((await p.textContent('.items li:nth-child(3) .val')) === '淡色地図', 'basemap adopted');
+check((await p.textContent('.items li:nth-child(8) .val')) === 'すべて', 'layers adopted');
 // 仕上げ → 保存（PNG 自動ダウンロード + 保存準備完了パネル）
 await p.click('text=仕上げへ');
 const dl = p.waitForEvent('download', { timeout: 10000 });
@@ -198,7 +211,9 @@ const j = await dl2;
 const jsonPath = `${OUT}/${j.suggestedFilename()}`;
 await j.saveAs(jsonPath);
 const settings = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-check(settings.app === 'MapWand' && settings.settings.style.index >= 0 && settings.elapsedMs > 0, 'settings JSON');
+check(settings.app === 'MapWand' && settings.format === 2 && settings.settings.base.index === 1 && settings.settings.layer.index === 7 && settings.elapsedMs > 0, 'settings JSON (format 2)');
+const notice = await p.textContent('.files');
+check(!notice.includes('読み込めず'), `all basemap tiles exported (${notice.trim().slice(0, 60)})`);
 const lastW = (await p.evaluate(() => window.__mw.state.writes)).at(-1);
 check((lastW[8] & 8) === 8, 'SAVED flag sent to device');
 await p.screenshot({ path: `${OUT}/saved.png` });

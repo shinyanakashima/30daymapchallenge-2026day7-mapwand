@@ -6,10 +6,12 @@
   "type": "module",
   "scripts": {
     "data:fetch": "bash data/scripts/fetch_raw.sh",
-    "data:density": "python3 data/scripts/build_density.py",
+    "data:stats": "python3 data/scripts/build_stats.py",
+    "data:places": "python3 data/scripts/fetch_places.py $(python3 -c \"import json;print(' '.join(c['code'] for c in json.load(open('data/processed/stats_2020.json'))['cities']['items'] if c['code']!='13100'))\")",
     "data:boundaries": "node --max-old-space-size=8192 data/scripts/build_boundaries.mjs",
+    "data:layers": "node --max-old-space-size=8192 data/scripts/build_layers.mjs",
     "data:check": "node data/scripts/check_join.mjs",
-    "data:build": "npm run data:density && npm run data:boundaries && npm run data:check",
+    "data:build": "npm run data:stats && npm run data:boundaries && npm run data:layers && npm run data:check",
     "protocol:gen": "node protocol/generate.mjs"
   },
   "devDependencies": {

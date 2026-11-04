@@ -1,0 +1,10 @@
+{
+ "railways": {
+  "exclude": "N02_001 === \"13\"",
+  "simplify": "1.5%"
+ },
+ "did": {
+  "simplify": "2.5%",
+  "minPartKm2": 0.5
+ }
+}

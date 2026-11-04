@@ -7,7 +7,36 @@ function renderPrim(p: Prim, key: number | string): React.ReactNode {
   switch (p.t) {
     case 'rect':
       return (
-        <rect key={key} x={p.x} y={p.y} width={p.w} height={p.h} fill={p.fill ?? 'none'} stroke={p.stroke} strokeWidth={p.sw} />
+        <rect
+          key={key}
+          x={p.x}
+          y={p.y}
+          width={p.w}
+          height={p.h}
+          fill={p.fill ?? 'none'}
+          fillOpacity={p.fo}
+          stroke={p.stroke}
+          strokeWidth={p.sw}
+        />
+      );
+    case 'circle':
+      return (
+        <circle key={key} cx={p.cx} cy={p.cy} r={p.r} fill={p.fill ?? 'none'} fillOpacity={p.fo} stroke={p.stroke} strokeWidth={p.sw} />
+      );
+    case 'image':
+      return (
+        <image
+          key={p.href}
+          href={p.href}
+          x={p.x}
+          y={p.y}
+          width={p.w}
+          height={p.h}
+          opacity={p.opacity}
+          preserveAspectRatio="none"
+          crossOrigin="anonymous"
+          style={p.blend ? { mixBlendMode: p.blend } : undefined}
+        />
       );
     case 'path':
       return (
@@ -15,8 +44,10 @@ function renderPrim(p: Prim, key: number | string): React.ReactNode {
           key={key}
           d={p.d}
           fill={p.fill ?? 'none'}
+          fillOpacity={p.fo}
           stroke={p.stroke}
           strokeWidth={p.sw}
+          strokeOpacity={p.so}
           strokeLinejoin={p.join}
           strokeLinecap={p.join === 'round' ? 'round' : undefined}
           data-code={p.id}

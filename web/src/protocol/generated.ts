@@ -17,6 +17,34 @@ export const DeviceFlag = {"ENCODER_OK":1} as const;
 export const LONG_PRESS_MS = 800;
 export const ITEMS = [
   {
+    "key": "data",
+    "label": "データ",
+    "short": "DATA",
+    "led": "#ff50b4",
+    "candidates": [
+      {
+        "label": "人口密度",
+        "short": "DENSITY"
+      },
+      {
+        "label": "人口増減率",
+        "short": "GROWTH"
+      },
+      {
+        "label": "平均世帯人員",
+        "short": "HOUSEHOLD"
+      },
+      {
+        "label": "人口性比",
+        "short": "SEX RATIO"
+      },
+      {
+        "label": "高齢化率",
+        "short": "AGING"
+      }
+    ]
+  },
+  {
     "key": "style",
     "label": "スタイル",
     "short": "STYLE",
@@ -45,6 +73,38 @@ export const ITEMS = [
       {
         "label": "若草",
         "short": "WAKAKUSA"
+      }
+    ]
+  },
+  {
+    "key": "base",
+    "label": "ベースマップ",
+    "short": "BASE",
+    "led": "#b07a3a",
+    "candidates": [
+      {
+        "label": "なし",
+        "short": "NONE"
+      },
+      {
+        "label": "淡色地図",
+        "short": "PALE"
+      },
+      {
+        "label": "標準地図",
+        "short": "STANDARD"
+      },
+      {
+        "label": "白地図",
+        "short": "BLANK"
+      },
+      {
+        "label": "陰影起伏図",
+        "short": "HILLSHADE"
+      },
+      {
+        "label": "写真",
+        "short": "PHOTO"
       }
     ]
   },
@@ -157,6 +217,46 @@ export const ITEMS = [
     ]
   },
   {
+    "key": "layer",
+    "label": "レイヤー",
+    "short": "LAYER",
+    "led": "#a8ff3c",
+    "candidates": [
+      {
+        "label": "なし",
+        "short": "NONE"
+      },
+      {
+        "label": "県庁所在地",
+        "short": "CAPITALS"
+      },
+      {
+        "label": "主要都市の人口",
+        "short": "CITIES"
+      },
+      {
+        "label": "鉄道",
+        "short": "RAILWAYS"
+      },
+      {
+        "label": "人口集中地区",
+        "short": "DID"
+      },
+      {
+        "label": "鉄道＋県庁所在地",
+        "short": "RAIL+CAP"
+      },
+      {
+        "label": "人口集中地区＋鉄道",
+        "short": "DID+RAIL"
+      },
+      {
+        "label": "すべて",
+        "short": "ALL"
+      }
+    ]
+  },
+  {
     "key": "frame",
     "label": "構図",
     "short": "FRAME",
@@ -183,19 +283,19 @@ export const ITEMS = [
     "led": "#ffffff",
     "candidates": [
       {
-        "label": "都道府県別 人口密度",
-        "short": "PREF DENS"
+        "label": "都道府県別 {指標}",
+        "short": "BY PREF"
       },
       {
-        "label": "人はどこに集まるか",
-        "short": "WHERE"
+        "label": "{指標}でみる日本",
+        "short": "JAPAN BY"
       },
       {
-        "label": "47都道府県の混みぐあい",
-        "short": "CROWD 47"
+        "label": "47都道府県の{指標}",
+        "short": "47 PREFS"
       },
       {
-        "label": "日本の人口密度 2020",
+        "label": "日本の{指標} 2020",
         "short": "JP 2020"
       }
     ]

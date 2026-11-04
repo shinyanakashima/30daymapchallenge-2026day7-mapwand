@@ -13,9 +13,17 @@ export interface Classification {
   bins: ClassBin[];
   /** key → 階級 index（0 = 最小） */
   classOf: Map<string, number>;
+  /** 境の値（発散配色用）。境をまたぐ階級は境で 2 つに分ける */
+  pivot: number | null;
+  /** 境より小さい値だけの階級の数 */
+  below: number;
 }
 
-export function quantileClassify(rows: { key: string; value: number }[], requested: number): Classification {
+export function quantileClassify(
+  rows: { key: string; value: number }[],
+  requested: number,
+  pivot: number | null = null,
+): Classification {
   const valid = rows.filter((r) => Number.isFinite(r.value));
   const sorted = valid.slice().sort((a, b) => a.value - b.value);
   const n = sorted.length;
@@ -25,6 +33,8 @@ export function quantileClassify(rows: { key: string; value: number }[], request
     // 同値は先に現れた値と同じ階級にする
     if (i > 0 && sorted[i].value === sorted[i - 1].value) raw[i] = raw[i - 1];
   }
+  // 境をまたぐ階級は境で分ける（境ちょうどの値は境より大きい側）
+  if (pivot !== null) for (let i = 0; i < n; i++) raw[i] = raw[i] * 2 + (sorted[i].value >= pivot ? 1 : 0);
   // 空階級を詰める
   const remap = new Map<number, number>();
   for (const c of raw) if (!remap.has(c)) remap.set(c, remap.size);
@@ -39,5 +49,6 @@ export function quantileClassify(rows: { key: string; value: number }[], request
     b.max = Math.max(b.max, r.value);
     b.count++;
   });
-  return { requested, k, bins, classOf };
+  const below = pivot === null ? 0 : bins.filter((b) => b.max < pivot).length;
+  return { requested, k, bins, classOf, pivot, below };
 }

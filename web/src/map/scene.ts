@@ -1,38 +1,55 @@
 // 地図の構成要素（シーン）を組み立てる。画面表示(SVG)と PNG 書き出し(Canvas)は
 // 同じシーンから描くので、見た目が一致する。
-import { geoConicEqualArea, geoGraticule, geoPath, type GeoProjection } from 'd3-geo';
+import { geoGraticule, geoMercator, geoPath, type GeoProjection } from 'd3-geo';
 import type { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 import {
+  CAPITALS,
+  CITIES,
+  CITY_MIN_POPULATION,
   COAST_MAIN,
   COAST_OKINAWA,
+  DID,
+  INDICATORS,
   INNER_BORDERS,
-  NATIONAL_DENSITY,
+  NATIONAL,
   PREFECTURES,
+  RAIL,
+  SHINKANSEN,
+  type Indicator,
   type Prefecture,
 } from '../data/dataset';
 import { quantileClassify, type Classification } from './classify';
 import {
+  BASEMAPS,
   CLASS_COUNTS,
   FONT_FAMILY,
   FRAMES,
   LABEL_MODES,
+  LAYER_SETS,
   LINE_WIDTHS,
   MAJOR_PREFS,
   STYLES,
   TITLES,
+  divergingColors,
   paletteColors,
+  type Basemap,
   type FrameKind,
+  type LayerSet,
+  type StylePreset,
 } from './presets';
 
 export const SCENE_W = 1600;
 export const SCENE_H = 1200;
 
 export interface MapSettings {
+  data: number;
   style: number;
+  base: number;
   color: number;
   classes: number;
   line: number;
   label: number;
+  layer: number;
   frame: number;
   title: number;
 }
@@ -45,8 +62,20 @@ export interface Box {
 }
 
 export type Prim =
-  | { t: 'rect'; x: number; y: number; w: number; h: number; fill?: string; stroke?: string; sw?: number }
-  | { t: 'path'; d: string; fill?: string; stroke?: string; sw?: number; join?: 'round' | 'miter'; id?: string }
+  | { t: 'rect'; x: number; y: number; w: number; h: number; fill?: string; fo?: number; stroke?: string; sw?: number }
+  | {
+      t: 'path';
+      d: string;
+      fill?: string;
+      fo?: number;
+      stroke?: string;
+      sw?: number;
+      so?: number;
+      join?: 'round' | 'miter';
+      id?: string;
+    }
+  | { t: 'circle'; cx: number; cy: number; r: number; fill?: string; fo?: number; stroke?: string; sw?: number }
+  | { t: 'image'; href: string; x: number; y: number; w: number; h: number; opacity?: number; blend?: 'multiply' }
   | {
       t: 'text';
       x: number;
@@ -69,6 +98,7 @@ export interface Scene {
   prims: Prim[];
   classification: Classification;
   colors: string[];
+  indicator: Indicator;
 }
 
 // ---------------- 構図 ----------------
@@ -76,36 +106,37 @@ export interface Scene {
 interface FrameLayout {
   /** 本図を収める範囲 */
   main: Box;
-  /** 寄り: 本図の拡大率と中心にする経緯度 */
+  /** 寄り: 本図の拡大率と、指定の経緯度を置く画面上の位置 */
   zoom?: { k: number; center: [number, number]; at: [number, number] };
   inset: Box;
-  legend: { x: number; y: number };
+  /** 凡例の左端と下端 */
+  legend: { x: number; bottom: number };
   title: { x: number; y: number; size: number };
 }
 
+const CREDIT_TOP = SCENE_H - 104;
+
 const LAYOUTS: Record<FrameKind, FrameLayout> = {
   full: {
-    main: { x: 200, y: 105, w: 1360, h: 1000 },
-    inset: { x: 70, y: 290, w: 400, h: 215 },
-    legend: { x: 1200, y: 690 },
-    title: { x: 80, y: 120, size: 56 },
+    main: { x: 250, y: 70, w: 1320, h: 1010 },
+    inset: { x: 60, y: 300, w: 380, h: 230 },
+    legend: { x: 1210, bottom: CREDIT_TOP - 16 },
+    title: { x: 60, y: 110, size: 56 },
   },
   wide: {
-    main: { x: 420, y: 250, w: 1000, h: 760 },
-    inset: { x: 150, y: 380, w: 330, h: 180 },
-    legend: { x: 1200, y: 760 },
-    title: { x: 150, y: 170, size: 52 },
+    main: { x: 470, y: 230, w: 900, h: 760 },
+    inset: { x: 140, y: 400, w: 320, h: 195 },
+    legend: { x: 1210, bottom: CREDIT_TOP - 40 },
+    title: { x: 140, y: 170, size: 52 },
   },
   close: {
-    main: { x: 260, y: 150, w: 1270, h: 930 },
-    zoom: { k: 1.32, center: [137.6, 36.4], at: [880, 640] },
-    inset: { x: 60, y: 250, w: 360, h: 195 },
-    legend: { x: 1210, y: 740 },
-    title: { x: 60, y: 110, size: 54 },
+    main: { x: 250, y: 70, w: 1320, h: 1010 },
+    zoom: { k: 1.35, center: [137.4, 36.3], at: [860, 600] },
+    inset: { x: 50, y: 250, w: 340, h: 205 },
+    legend: { x: 1220, bottom: CREDIT_TOP - 12 },
+    title: { x: 50, y: 100, size: 54 },
   },
 };
-
-const baseProjection = () => geoConicEqualArea().parallels([33, 43]).rotate([-136, 0]).center([0, 37]);
 
 const MAIN_FC: FeatureCollection<Polygon | MultiPolygon> = {
   type: 'FeatureCollection',
@@ -113,14 +144,24 @@ const MAIN_FC: FeatureCollection<Polygon | MultiPolygon> = {
 };
 const OKINAWA = PREFECTURES.find((p) => p.code === '47')!;
 
+interface Projected {
+  proj: GeoProjection;
+  path: ReturnType<typeof geoPath>;
+}
+
 interface FrameGeometry {
   layout: FrameLayout;
+  main: Projected;
+  inset: Projected;
   fills: Map<string, string>;
   inner: string;
   coastMain: string;
   coastOkinawa: string;
   graticule: string;
   labelPos: Map<string, [number, number]>;
+  rail: { main: string; inset: string };
+  shinkansen: string;
+  did: { main: string; inset: string };
 }
 
 // 地名の位置を手で調整する県（経緯度）。重心が海や隣県に寄るもの、混み合う地域。
@@ -176,7 +217,7 @@ function frameGeometry(kind: FrameKind): FrameGeometry {
   if (cached) return cached;
   const layout = LAYOUTS[kind];
   const m = layout.main;
-  const proj: GeoProjection = baseProjection().fitExtent(
+  const proj = geoMercator().fitExtent(
     [
       [m.x, m.y],
       [m.x + m.w, m.y + m.h],
@@ -191,16 +232,13 @@ function frameGeometry(kind: FrameKind): FrameGeometry {
   }
   const ib = layout.inset;
   const pad = 18;
-  const insetProj = baseProjection()
-    .rotate([-127.5, 0])
-    .center([0, 26])
-    .fitExtent(
-      [
-        [ib.x + pad, ib.y + pad],
-        [ib.x + ib.w - pad, ib.y + ib.h - pad],
-      ],
-      OKINAWA.feature,
-    );
+  const insetProj = geoMercator().fitExtent(
+    [
+      [ib.x + pad, ib.y + pad + 14],
+      [ib.x + ib.w - pad, ib.y + ib.h - pad],
+    ],
+    OKINAWA.feature,
+  );
   const path = geoPath(proj).digits(1);
   const insetPath = geoPath(insetProj).digits(1);
 
@@ -217,39 +255,142 @@ function frameGeometry(kind: FrameKind): FrameGeometry {
   }
   const g: FrameGeometry = {
     layout,
+    main: { proj, path },
+    inset: { proj: insetProj, path: insetPath },
     fills,
     inner: path(INNER_BORDERS) ?? '',
     coastMain: path(COAST_MAIN) ?? '',
     coastOkinawa: insetPath(COAST_OKINAWA) ?? '',
     graticule: path(geoGraticule().step([5, 5]).extent([[115, 15], [160, 55]])()) ?? '',
     labelPos,
+    rail: { main: path(RAIL) ?? '', inset: insetPath(RAIL) ?? '' },
+    shinkansen: path(SHINKANSEN) ?? '',
+    did: { main: path(DID) ?? '', inset: insetPath(DID) ?? '' },
   };
   geomCache.set(kind, g);
   return g;
 }
 
+// ---------------- 地理院タイル ----------------
+
+/** Web メルカトルの投影に合わせて、範囲 clip を覆うタイル画像を並べる */
+export function tilePrims(proj: GeoProjection, clip: Box, base: Basemap): Prim[] {
+  if (!base.url) return [];
+  const s = proj.scale();
+  const [tx, ty] = proj.translate();
+  const world = 2 * Math.PI * s; // ズーム 0 の世界全体の画面上の幅
+  const z = Math.min(base.zoom[1], Math.max(base.zoom[0], Math.ceil(Math.log2(world / 256))));
+  const n = 2 ** z;
+  const T = world / n;
+  const ox = tx - Math.PI * s;
+  const oy = ty - Math.PI * s;
+  const x0 = Math.max(0, Math.floor((clip.x - ox) / T));
+  const x1 = Math.min(n - 1, Math.floor((clip.x + clip.w - ox) / T));
+  const y0 = Math.max(0, Math.floor((clip.y - oy) / T));
+  const y1 = Math.min(n - 1, Math.floor((clip.y + clip.h - oy) / T));
+  const out: Prim[] = [];
+  const multiply = base.mode === 'multiply';
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      out.push({
+        t: 'image',
+        href: base.url.replace('{z}', String(z)).replace('{x}', String(x)).replace('{y}', String(y)),
+        // 継ぎ目に細い線が出ないよう 0.5px 重ねる
+        x: ox + x * T,
+        y: oy + y * T,
+        w: T + 0.5,
+        h: T + 0.5,
+        opacity: base.opacity,
+        blend: multiply ? 'multiply' : undefined,
+      });
+    }
+  }
+  return out;
+}
+
 // ---------------- 書式 ----------------
 
-export const fmt1 = (v: number) =>
-  v.toLocaleString('ja-JP', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+export function formatValue(v: number, ind: Indicator): string {
+  const s = Math.abs(v).toLocaleString('ja-JP', {
+    minimumFractionDigits: ind.digits,
+    maximumFractionDigits: ind.digits,
+  });
+  if (ind.diverging !== null) return (v > 0 ? '+' : v < 0 ? '−' : '±') + s;
+  return v < 0 ? '−' + s : s;
+}
 
-export const CREDIT_LINES = [
-  '出典：総務省統計局「令和2年国勢調査 人口等基本集計」第1-1表（e-Stat）、「国土数値情報（行政区域データ）」（国土交通省）を加工して作成',
-  '人口密度は統計表の値（調査対象外地域の面積を除く）。正積円錐図法。沖縄県は枠内に移動（縮尺は本図と異なる）。小笠原諸島など一部の島は省略。',
-];
+/** 全角を 1、半角を 0.55 として幅を数え、max 文字幅で折り返す */
+function wrap(text: string, max: number): string[] {
+  const lines: string[] = [];
+  let cur = '';
+  let w = 0;
+  for (const ch of text) {
+    const cw = ch.charCodeAt(0) < 0x2000 ? 0.55 : 1;
+    if (w + cw > max && cur) {
+      lines.push(cur);
+      cur = '';
+      w = 0;
+    }
+    cur += ch;
+    w += cw;
+  }
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+export function creditLines(ind: Indicator, base: Basemap, layers: LayerSet, serif = false): string[] {
+  const boundary = ['行政区域データ'];
+  if (layers.railways) boundary.push('鉄道データ');
+  if (layers.did) boundary.push('人口集中地区データ');
+  const src = [
+    `出典：総務省統計局「令和2年国勢調査 人口等基本集計」${ind.table}（e-Stat）`,
+    `「国土数値情報（${boundary.join('・')}）」（国土交通省）`,
+  ];
+  if (layers.capitals || layers.cities) src.push('Wikidata（都市の位置）');
+  if (base.url) src.push(base.credit);
+  const notes = [
+    `${ind.label}：${ind.note}。`,
+    'Webメルカトル図法（北ほど面積が大きく表示される）。沖縄県は枠内に移動（縮尺は本図と異なる）。小笠原諸島など一部の島は省略。',
+  ];
+  const width = serif ? 100 : 108; // 明朝体は字幅が広い
+  const lines = [...wrap(src.join('、') + 'を加工して作成', width), ...wrap(notes.join(''), width)];
+  if (base.extraCredit) lines.push(...wrap(base.extraCredit, 108));
+  return lines;
+}
 
 // ---------------- シーン ----------------
 
+const CITY_R_MAX = 34; // 東京 23 区の円の半径（px）
+const cityRadius = (pop: number) => CITY_R_MAX * Math.sqrt(pop / CITIES[0].population!);
+
+function layerColors(style: StylePreset) {
+  return {
+    rail: style.text,
+    did: style.text,
+    city: style.bg,
+  };
+}
+
 export function buildScene(s: MapSettings): Scene {
   const style = STYLES[s.style];
+  const ind = INDICATORS[s.data];
+  const base = BASEMAPS[s.base];
+  const layers = LAYER_SETS[s.layer];
   const frame = FRAMES[s.frame];
   const g = frameGeometry(frame);
   const L = g.layout;
   const family = FONT_FAMILY[style.font];
   const lw = LINE_WIDTHS[s.line];
-  const rows = PREFECTURES.map((p) => ({ key: p.code, value: p.density }));
-  const cls = quantileClassify(rows, CLASS_COUNTS[s.classes]);
-  const colors = paletteColors(s.color, cls.k, style.ramp, style.bg);
+  const lc = layerColors(style);
+  const rows = PREFECTURES.map((p) => ({ key: p.code, value: p.values[ind.key] }));
+  const cls = quantileClassify(rows, CLASS_COUNTS[s.classes], ind.diverging);
+  const colors =
+    ind.diverging === null
+      ? paletteColors(s.color, cls.k, style.ramp, style.bg)
+      : divergingColors(s.color, cls.below, cls.k - cls.below, style.ramp, style.bg);
+  const fillOf = (code: string) => colors[cls.classOf.get(code)!];
+  const fo = base.mode === 'under' ? base.fillOpacity : 1;
+  const coastW = Math.max(0.6, Math.min(lw, 1.2));
   const prims: Prim[] = [];
   const text = (
     x: number,
@@ -259,35 +400,65 @@ export function buildScene(s: MapSettings): Scene {
     opt: Partial<Extract<Prim, { t: 'text' }>> = {},
   ): Prim => ({ t: 'text', x, y, text: t, size, weight: 400, family, fill: style.text, anchor: 'start', ...opt });
 
-  prims.push({ t: 'rect', x: 0, y: 0, w: SCENE_W, h: SCENE_H, fill: style.bg });
-  if (style.graticule) prims.push({ t: 'path', d: g.graticule, stroke: style.graticule, sw: 1 });
+  const full: Box = { x: 0, y: 0, w: SCENE_W, h: SCENE_H };
+  prims.push({ t: 'rect', ...full, fill: style.bg });
+  if (!base.url && style.graticule) prims.push({ t: 'path', d: g.graticule, stroke: style.graticule, sw: 1 });
+
+  // 1 つの投影について、ベースマップ・塗り・レイヤーを重ねる
+  const drawMap = (pj: Projected, clip: Box, codes: Prefecture[], coast: string, inner: string | null, isInset: boolean) => {
+    const out: Prim[] = [];
+    if (base.mode === 'under') out.push(...tilePrims(pj.proj, clip, base));
+    for (const p of codes) out.push({ t: 'path', d: g.fills.get(p.code)!, fill: fillOf(p.code), fo, id: p.code });
+    if (base.mode === 'multiply') out.push(...tilePrims(pj.proj, clip, base));
+    if (layers.did) out.push({ t: 'path', d: isInset ? g.did.inset : g.did.main, fill: lc.did, fo: 0.3 });
+    if (inner) out.push({ t: 'path', d: inner, stroke: style.border, sw: lw, join: 'round' });
+    out.push({ t: 'path', d: coast, stroke: style.coast, sw: coastW, join: 'round' });
+    if (layers.railways) {
+      out.push({ t: 'path', d: isInset ? g.rail.inset : g.rail.main, stroke: lc.rail, sw: 1, so: 0.75, join: 'round' });
+      if (!isInset) {
+        out.push({ t: 'path', d: g.shinkansen, stroke: style.bg, sw: 4.2, join: 'round' });
+        out.push({ t: 'path', d: g.shinkansen, stroke: lc.rail, sw: 2.2, join: 'round' });
+      }
+    }
+    if (layers.cities) {
+      for (const c of CITIES) {
+        if ((c.pref === '47') !== isInset) continue;
+        const [x, y] = pj.proj(c.lonlat)!;
+        out.push({ t: 'circle', cx: x, cy: y, r: cityRadius(c.population!), fill: lc.city, fo: 0.45, stroke: style.text, sw: 1.4 });
+      }
+    }
+    if (layers.capitals) {
+      for (const c of CAPITALS) {
+        if ((c.pref === '47') !== isInset) continue;
+        const [x, y] = pj.proj(c.lonlat)!;
+        out.push({ t: 'circle', cx: x, cy: y, r: 4, fill: style.bg, stroke: style.text, sw: 1.8 });
+        // 県名の地名を出さないときだけ都市名を添える
+        if (LABEL_MODES[s.label] === 'none') {
+          out.push(text(x + 7, y + 5, c.name, 13, { weight: 700, halo: style.halo, haloW: 3 }));
+        }
+      }
+    }
+    return out;
+  };
 
   // 本図
-  const main: Prim[] = [];
-  for (const p of PREFECTURES) {
-    if (p.code === '47') continue;
-    main.push({ t: 'path', d: g.fills.get(p.code)!, fill: colors[cls.classOf.get(p.code)!], id: p.code });
-  }
-  main.push({ t: 'path', d: g.inner, stroke: style.border, sw: lw, join: 'round' });
-  main.push({ t: 'path', d: g.coastMain, stroke: style.coast, sw: Math.max(0.6, Math.min(lw, 1.2)), join: 'round' });
-  prims.push(...main);
+  prims.push({
+    t: 'group',
+    clip: full,
+    children: drawMap(g.main, full, PREFECTURES.filter((p) => p.code !== '47'), g.coastMain, g.inner, false),
+  });
 
   // 沖縄県の挿入図
   const ib = L.inset;
   prims.push({ t: 'rect', ...ib, fill: style.panel, stroke: style.panelStroke, sw: 1.2 });
-  prims.push({
-    t: 'group',
-    clip: ib,
-    children: [
-      { t: 'path', d: g.fills.get('47')!, fill: colors[cls.classOf.get('47')!], id: '47' },
-      { t: 'path', d: g.coastOkinawa, stroke: style.coast, sw: Math.max(0.6, Math.min(lw, 1.2)), join: 'round' },
-    ],
-  });
+  prims.push({ t: 'group', clip: ib, children: drawMap(g.inset, ib, [OKINAWA], g.coastOkinawa, null, true) });
+  prims.push({ t: 'rect', ...ib, stroke: style.panelStroke, sw: 1.2 });
+  prims.push(text(ib.x + 12, ib.y + 24, '沖縄県', 15, { weight: 700, fill: style.subText, halo: style.panel, haloW: 3 }));
 
   // 地名
   const mode = LABEL_MODES[s.label];
   if (mode !== 'none') {
-    const targets: Prefecture[] = mode === 'all' ? PREFECTURES : PREFECTURES.filter((p) => MAJOR_PREFS.includes(p.code));
+    const targets = mode === 'all' ? PREFECTURES : PREFECTURES.filter((p) => MAJOR_PREFS.includes(p.code));
     for (const p of targets) {
       const [x, y] = g.labelPos.get(p.code)!;
       if (mode === 'all') {
@@ -295,50 +466,100 @@ export function buildScene(s: MapSettings): Scene {
         prims.push(text(x, y + 5, p.shortName, 15, { anchor: 'middle', weight: 700, halo: style.halo, haloW: 3.5 }));
       } else {
         prims.push(text(x, y - 2, p.shortName, 19, { anchor: 'middle', weight: 700, halo: style.halo, haloW: 4 }));
-        prims.push(text(x, y + 18, fmt1(p.density), 15, { anchor: 'middle', halo: style.halo, haloW: 3.5 }));
+        prims.push(text(x, y + 18, formatValue(p.values[ind.key], ind), 15, { anchor: 'middle', halo: style.halo, haloW: 3.5 }));
       }
     }
   }
 
-  // タイトル
+  // タイトル（ベースマップの上でも読めるよう縁取りする）
   const T = L.title;
-  prims.push(text(T.x, T.y, TITLES[s.title], T.size, { weight: style.titleWeight }));
-  if (style.rule) prims.push({ t: 'rect', x: T.x, y: T.y + 22, w: 560, h: 2, fill: style.text });
-  prims.push(text(T.x, T.y + 60, '令和2年（2020年）国勢調査　都道府県別の人口密度', 22, { fill: style.subText }));
+  const titleHalo = base.url ? { halo: style.halo, haloW: 6 } : {};
+  prims.push(text(T.x, T.y, TITLES[s.title].replace('{指標}', ind.label), T.size, { weight: style.titleWeight, ...titleHalo }));
+  if (style.rule) prims.push({ t: 'rect', x: T.x, y: T.y + 22, w: 600, h: 2, fill: style.text });
+  prims.push(
+    text(T.x, T.y + 60, `令和2年（2020年）国勢調査　都道府県別の${ind.label}`, 22, {
+      fill: style.subText,
+      ...(base.url ? { halo: style.halo, haloW: 5 } : {}),
+    }),
+  );
+
+  // 出典の帯の位置（凡例はこの上に収める）
+  const credits = creditLines(ind, base, layers, style.font === 'serif');
+  const creditTop = SCENE_H - 24 - credits.length * 19;
 
   // 凡例
-  const lg = L.legend;
+  const lg = { x: L.legend.x, bottom: Math.min(L.legend.bottom, creditTop - 36) };
   const rowH = 34;
-  const lgW = 330;
-  const lgH = 96 + cls.k * rowH + 52;
-  prims.push({ t: 'rect', x: lg.x, y: lg.y, w: lgW, h: lgH, fill: style.panel, stroke: style.panelStroke, sw: 1.2 });
-  prims.push(text(lg.x + 22, lg.y + 40, '人口密度', 21, { weight: 700 }));
-  prims.push(text(lg.x + 112, lg.y + 40, '人/km²', 16, { fill: style.subText }));
-  prims.push(text(lg.x + 22, lg.y + 68, `分位分類 ${cls.k}階級`, 15, { fill: style.subText }));
+  const lgW = 340;
+  const layerRows: { kind: 'did' | 'rail' | 'shinkansen' | 'capital' | 'cities'; label: string }[] = [];
+  if (layers.did) layerRows.push({ kind: 'did', label: '人口集中地区（2020年）' });
+  if (layers.railways) {
+    layerRows.push({ kind: 'rail', label: '鉄道' });
+    layerRows.push({ kind: 'shinkansen', label: '新幹線' });
+  }
+  if (layers.capitals) layerRows.push({ kind: 'capital', label: '県庁所在都市' });
+  const citiesH = layers.cities ? 122 : 0;
+  const notesH = 26 + (cls.k < cls.requested || cls.k > cls.requested ? 20 : 0) + (ind.diverging !== null ? 20 : 0);
+  const lgH = 96 + cls.k * rowH + notesH + (layerRows.length ? 16 + layerRows.length * 28 : 0) + citiesH + 14;
+  const ly = lg.bottom - lgH;
+  prims.push({ t: 'rect', x: lg.x, y: ly, w: lgW, h: lgH, fill: style.panel, stroke: style.panelStroke, sw: 1.2 });
+  prims.push(text(lg.x + 22, ly + 40, ind.label, 21, { weight: 700 }));
+  prims.push(text(lg.x + 22, ly + 68, `${ind.unit}　分位分類 ${cls.k}階級`, 15, { fill: style.subText }));
   for (let i = 0; i < cls.k; i++) {
     const ci = cls.k - 1 - i; // 上から大きい階級
     const b = cls.bins[ci];
-    const y = lg.y + 90 + i * rowH;
-    prims.push({ t: 'rect', x: lg.x + 22, y, w: 40, h: 24, fill: colors[ci], stroke: style.panelStroke, sw: 0.8 });
-    const label = b.min === b.max ? fmt1(b.min) : `${fmt1(b.min)} – ${fmt1(b.max)}`;
+    const y = ly + 90 + i * rowH;
+    prims.push({ t: 'rect', x: lg.x + 22, y, w: 40, h: 24, fill: colors[ci], fo, stroke: style.panelStroke, sw: 0.8 });
+    const label = b.min === b.max ? formatValue(b.min, ind) : `${formatValue(b.min, ind)} 〜 ${formatValue(b.max, ind)}`;
     prims.push(text(lg.x + 76, y + 18, label, 16));
     prims.push(text(lg.x + lgW - 22, y + 18, `${b.count}`, 14, { anchor: 'end', fill: style.subText }));
   }
-  const fy = lg.y + 90 + cls.k * rowH + 26;
-  prims.push(text(lg.x + 22, fy, `全国 ${fmt1(NATIONAL_DENSITY)}　右の数は都道府県数`, 14, { fill: style.subText }));
-  if (cls.k < cls.requested) {
-    prims.push(text(lg.x + 22, fy + 20, `同じ値の整理により${cls.requested}→${cls.k}階級`, 13, { fill: style.subText }));
+  let fy = ly + 90 + cls.k * rowH + 22;
+  prims.push(text(lg.x + 22, fy, `全国 ${formatValue(NATIONAL[ind.key], ind)}　右の数は都道府県数`, 14, { fill: style.subText }));
+  if (ind.diverging !== null) {
+    fy += 20;
+    prims.push(text(lg.x + 22, fy, `${ind.diverging} を境に色の系統を分けています`, 13, { fill: style.subText }));
+  }
+  if (cls.k !== cls.requested) {
+    fy += 20;
+    const why = cls.k < cls.requested ? '同じ値の整理' : `${ind.diverging} での分割`;
+    prims.push(text(lg.x + 22, fy, `${why}により ${cls.requested}→${cls.k}階級`, 13, { fill: style.subText }));
+  }
+  if (layerRows.length) {
+    fy += 12;
+    prims.push({ t: 'rect', x: lg.x + 22, y: fy, w: lgW - 44, h: 1, fill: style.panelStroke });
+    for (const r of layerRows) {
+      fy += 28;
+      const cx = lg.x + 42;
+      const cy = fy - 6;
+      if (r.kind === 'did') prims.push({ t: 'rect', x: lg.x + 22, y: cy - 9, w: 40, h: 18, fill: lc.did, fo: 0.3 });
+      if (r.kind === 'rail') prims.push({ t: 'path', d: `M${lg.x + 22},${cy}h40`, stroke: lc.rail, sw: 1, so: 0.75 });
+      if (r.kind === 'shinkansen') prims.push({ t: 'path', d: `M${lg.x + 22},${cy}h40`, stroke: lc.rail, sw: 2.2 });
+      if (r.kind === 'capital') prims.push({ t: 'circle', cx, cy, r: 4, fill: style.bg, stroke: style.text, sw: 1.8 });
+      prims.push(text(lg.x + 76, fy, r.label, 15));
+    }
+  }
+  if (layers.cities) {
+    fy += 32;
+    prims.push(text(lg.x + 22, fy, `人口（${(CITY_MIN_POPULATION / 10000).toFixed(0)}万以上の市・東京23区）`, 15));
+    const baseY = fy + 76;
+    let cx = lg.x + 50;
+    for (const v of [500_000, 2_000_000, 5_000_000]) {
+      const r = cityRadius(v);
+      prims.push({ t: 'circle', cx, cy: baseY - r, r, fill: lc.city, fo: 0.45, stroke: style.text, sw: 1.4 });
+      prims.push(text(cx, baseY + 18, `${v / 10000}万`, 13, { anchor: 'middle', fill: style.subText }));
+      cx += r + 64;
+    }
   }
 
-  // 挿入図の注記
-  prims.push(text(ib.x + 12, ib.y + 26, '沖縄県', 15, { weight: 700, fill: style.subText }));
-
   // 出典（寄りの構図で地図と重ならないよう帯を敷く）
-  prims.push({ t: 'rect', x: 0, y: SCENE_H - 88, w: SCENE_W, h: 88, fill: style.bg });
-  CREDIT_LINES.forEach((line, i) => {
-    prims.push(text(60, SCENE_H - 58 + i * 22, line, 14, { fill: style.subText }));
+  const top = creditTop;
+  prims.push({ t: 'rect', x: 0, y: top - 22, w: SCENE_W, h: SCENE_H - top + 22, fill: style.bg });
+  credits.forEach((line, i) => {
+    const ascii = /^[\x20-\x7e]+$/.test(line); // 地理院タイルの追加の出典表記（英文）
+    prims.push(text(60, top + i * 19, line, ascii ? 11.5 : 13.5, { fill: style.subText }));
   });
-  prims.push(text(SCENE_W - 60, SCENE_H - 36, 'MapWand', 14, { anchor: 'end', weight: 700, fill: style.subText }));
+  prims.push(text(SCENE_W - 60, SCENE_H - 24, 'MapWand', 14, { anchor: 'end', weight: 700, fill: style.subText }));
 
-  return { w: SCENE_W, h: SCENE_H, bg: style.bg, prims, classification: cls, colors };
+  return { w: SCENE_W, h: SCENE_H, bg: style.bg, prims, classification: cls, colors, indicator: ind };
 }

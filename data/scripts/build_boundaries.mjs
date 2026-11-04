@@ -18,7 +18,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const src = path.join(root, 'data/raw/n03/N03-20_200101.shp');
 const out = path.join(root, 'data/processed/prefectures.topo.json');
-const density = JSON.parse(fs.readFileSync(path.join(root, 'data/processed/density_2020.json'), 'utf8'));
+const density = JSON.parse(fs.readFileSync(path.join(root, 'data/processed/stats_2020.json'), 'utf8'));
 
 const nameToCode = Object.fromEntries(density.prefectures.map((p) => [p.name, p.code]));
 if (!fs.existsSync(src)) {

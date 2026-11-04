@@ -11,9 +11,11 @@ export const FINISH_SAVE = 0;
 export const FINISH_BACK = 1;
 
 export const DEFAULT_SETTINGS: MapSettings = {
+  data: 0,
   style: 0,
   ...STYLES[0].defaults,
   classes: 2,
+  layer: 0,
   frame: 0,
   title: 0,
 };

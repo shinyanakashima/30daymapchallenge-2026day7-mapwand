@@ -189,7 +189,7 @@ static void setupBle() {
   inputChr = svc->createCharacteristic(INPUT_UUID, NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
   NimBLECharacteristic* stateChr = svc->createCharacteristic(STATE_UUID, NIMBLE_PROPERTY::WRITE);
   stateChr->setCallbacks(new StateCB());
-  svc->start();
+  server->start();  // NimBLE 2.x ではサービスはサーバー開始時に有効になる
   updateSnapshot();
 
   NimBLEAdvertising* adv = NimBLEDevice::getAdvertising();

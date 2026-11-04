@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { quantileClassify } from './classify';
-import density from '@data/processed/density_2020.json';
+import stats from '@data/processed/stats_2020.json';
 
-const rows = density.prefectures.map((p) => ({ key: p.code, value: p.density }));
+const rows = stats.prefectures.map((p) => ({ key: p.code, value: p.density }));
 
 describe('quantileClassify', () => {
   it('assigns all 47 prefectures and keeps bins ordered and non-overlapping', () => {
@@ -41,5 +41,17 @@ describe('quantileClassify', () => {
     );
     expect(c.classOf.has('a')).toBe(false);
     expect(c.bins[0].min).toBe(3);
+  });
+
+  it('splits the class that straddles the pivot (diverging data)', () => {
+    const growth = stats.prefectures.map((p) => ({ key: p.code, value: p.growth }));
+    for (const k of [3, 4, 5, 6, 7]) {
+      const c = quantileClassify(growth, k, 0);
+      expect(c.classOf.size).toBe(47);
+      for (const b of c.bins) expect(b.max < 0 || b.min >= 0).toBe(true);
+      expect(c.bins.slice(0, c.below).every((b) => b.max < 0)).toBe(true);
+      expect(c.bins.slice(c.below).every((b) => b.min >= 0)).toBe(true);
+      expect(c.k).toBeLessThanOrEqual(k + 1);
+    }
   });
 });

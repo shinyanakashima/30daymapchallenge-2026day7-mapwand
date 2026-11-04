@@ -3,6 +3,7 @@ import { STYLES } from '../map/presets';
 import {
   DEFAULT_SETTINGS,
   FINISH_INDEX,
+  ITEM_KEYS,
   currentCandidate,
   editorReducer as r,
   effectiveSettings,
@@ -10,9 +11,12 @@ import {
   isPreviewing,
 } from './editor';
 
+const at = (key: string) => ITEM_KEYS.indexOf(key as (typeof ITEM_KEYS)[number]);
+const STYLE = at('style');
+
 describe('editor', () => {
   it('previews on rotate, wraps around, and adopts on short press', () => {
-    let s = initialEditor();
+    let s = r(initialEditor(), { type: 'gotoItem', index: STYLE });
     s = r(s, { type: 'rotate', steps: 1 });
     expect(isPreviewing(s)).toBe(true);
     expect(effectiveSettings(s).style).toBe(1);
@@ -22,7 +26,8 @@ describe('editor', () => {
     s = r(s, { type: 'adopt' });
     expect(s.committed.style).toBe(STYLES.length - 1);
     expect(s.committed.color).toBe(STYLES[STYLES.length - 1].defaults.color);
-    expect(s.itemIndex).toBe(1);
+    expect(s.committed.base).toBe(STYLES[STYLES.length - 1].defaults.base);
+    expect(s.itemIndex).toBe(STYLE + 1);
   });
 
   it('moving item with buttons discards an unadopted preview', () => {
@@ -33,11 +38,13 @@ describe('editor', () => {
     expect(s.preview).toBeNull();
     s = r(s, { type: 'prevItem' });
     expect(s.itemIndex).toBe(0);
+    s = r(s, { type: 'prevItem' });
+    expect(s.itemIndex).toBe(ITEM_KEYS.length - 1);
   });
 
   it('long press cancels preview, then undoes the previous adoption', () => {
     let s = initialEditor();
-    s = r(s, { type: 'gotoItem', index: 2 }); // classes
+    s = r(s, { type: 'gotoItem', index: at('classes') });
     s = r(s, { type: 'rotate', steps: 1 });
     s = r(s, { type: 'adopt' });
     expect(s.committed.classes).toBe(3);
@@ -51,7 +58,7 @@ describe('editor', () => {
   });
 
   it('undoing a style restores the bundled values', () => {
-    let s = initialEditor();
+    let s = r(initialEditor(), { type: 'gotoItem', index: STYLE });
     s = r(s, { type: 'rotate', steps: 2 });
     s = r(s, { type: 'adopt' });
     s = r(s, { type: 'prevItem' });
@@ -66,6 +73,7 @@ describe('editor', () => {
     s = r(s, { type: 'rotate', steps: 1 });
     s = r(s, { type: 'adopt' });
     expect(s.itemIndex).toBe(0);
+    expect(ITEM_KEYS[s.itemIndex]).toBe('data');
     expect(s.saveRequest).toBe(1);
   });
 });

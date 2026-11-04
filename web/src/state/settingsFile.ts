@@ -1,16 +1,18 @@
 // 同じ地図を再現するための設定 JSON
 import { ITEMS } from '../protocol/generated';
-import { DATA_VERSION, MANIFEST } from '../data/dataset';
+import { DATA_VERSION, INDICATORS } from '../data/dataset';
 import type { MapSettings } from '../map/scene';
 
-export const SETTINGS_FORMAT = 1;
-const KEYS: (keyof MapSettings)[] = ['style', 'color', 'classes', 'line', 'label', 'frame', 'title'];
+export const SETTINGS_FORMAT = 2;
+const KEYS: (keyof MapSettings)[] = ['data', 'style', 'base', 'color', 'classes', 'line', 'label', 'layer', 'frame', 'title'];
+/** 形式 1（データ・ベースマップ・レイヤーの項目がない版）で省略された値 */
+const ADDED_IN_2: Partial<MapSettings> = { data: 0, base: 0, layer: 0 };
 
 export interface SettingsFile {
   app: 'MapWand';
   format: number;
   dataVersion: string;
-  data: { statistic: string; unit: string; reference_date: string; source: string };
+  data: { statistic: string; unit: string; reference_date: string; source: string; table: string };
   settings: Record<keyof MapSettings, { index: number; label: string }>;
   savedAt: string;
   elapsedMs: number | null;
@@ -27,10 +29,11 @@ export function toSettingsFile(s: MapSettings, elapsedMs: number | null): Settin
     format: SETTINGS_FORMAT,
     dataVersion: DATA_VERSION,
     data: {
-      statistic: MANIFEST.statistic.name,
-      unit: MANIFEST.statistic.unit,
-      reference_date: MANIFEST.statistic.reference_date,
-      source: MANIFEST.statistic.survey,
+      statistic: INDICATORS[s.data].label,
+      unit: INDICATORS[s.data].unit,
+      reference_date: '2020-10-01',
+      source: '令和2年国勢調査 人口等基本集計（総務省統計局）',
+      table: INDICATORS[s.data].table,
     },
     settings,
     savedAt: new Date().toISOString(),
@@ -44,7 +47,8 @@ export function parseSettingsFile(text: string): { settings: MapSettings; warnin
   if (j.format > SETTINGS_FORMAT) throw new Error('新しい形式の設定ファイルです。アプリを更新してください');
   const out = {} as MapSettings;
   for (const k of KEYS) {
-    const v = j.settings?.[k]?.index;
+    let v = j.settings?.[k]?.index;
+    if (v === undefined && j.format === 1 && k in ADDED_IN_2) v = ADDED_IN_2[k];
     const n = ITEMS.find((i) => i.key === k)!.candidates.length;
     if (!Number.isInteger(v) || v! < 0 || v! >= n) throw new Error(`設定値が不正です: ${k}`);
     out[k] = v!;
