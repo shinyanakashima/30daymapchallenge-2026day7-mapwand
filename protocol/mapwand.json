@@ -1,5 +1,5 @@
 {
-  "protocolVersion": 1,
+  "protocolVersion": 2,
   "deviceName": "MapWand",
   "uuids": {
     "service": "84cff35f-c3ea-4542-bc50-29b53501e42a",

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { RotaryTracker, counterDelta, decodeInput, encodeInput, encodeState, seqAdvance } from './codec';
-import { InputType, STATE_SIZE } from './generated';
+import { InputType, PROTOCOL_VERSION, STATE_SIZE } from './generated';
 
 describe('codec', () => {
   it('round-trips input packets (little endian, signed counter)', () => {
-    const p = { version: 1, type: InputType.ROTARY, seq: 65535, counter: -123456, button: 0, action: 0, deviceFlags: 1 };
+    const p = { version: PROTOCOL_VERSION, type: InputType.ROTARY, seq: 65535, counter: -123456, button: 0, action: 0, deviceFlags: 1 };
     const v = encodeInput(p);
-    expect(new Uint8Array(v.buffer).slice(0, 4)).toEqual(new Uint8Array([1, 1, 0xff, 0xff]));
+    expect(new Uint8Array(v.buffer).slice(0, 4)).toEqual(new Uint8Array([PROTOCOL_VERSION, 1, 0xff, 0xff]));
     expect(decodeInput(v)).toEqual(p);
   });
 
@@ -16,7 +16,7 @@ describe('codec', () => {
     });
     expect(b.length).toBe(STATE_SIZE);
     expect(STATE_SIZE).toBeLessThanOrEqual(20);
-    expect([...b.slice(0, 12)]).toEqual([1, 1, 0x34, 0x12, 2, 3, 5, 2, 1, 1, 2, 3]);
+    expect([...b.slice(0, 12)]).toEqual([PROTOCOL_VERSION, 1, 0x34, 0x12, 2, 3, 5, 2, 1, 1, 2, 3]);
     expect(new DataView(b.buffer).getInt16(12, true)).toBe(-61);
   });
 

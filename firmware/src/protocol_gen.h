@@ -4,7 +4,7 @@
 
 namespace mapwand {
 
-static const uint8_t PROTOCOL_VERSION = 1;
+static const uint8_t PROTOCOL_VERSION = 2;
 static const char* const DEVICE_NAME = "MapWand";
 static const char* const SERVICE_UUID = "84cff35f-c3ea-4542-bc50-29b53501e42a";
 static const char* const INPUT_UUID = "dde87509-d227-40ae-944c-06743fffba6b";

@@ -14,11 +14,12 @@ fs.mkdirSync(OUT, { recursive: true });
 
 const mock = () => {
   const UUIDS = window.__MW_UUIDS;
+  const VERSION = window.__MW_VERSION;
   const listeners = new Set();
   const state = { counter: 1000, seq: 50, writes: [], connected: false, connects: 0 };
   const pkt = (type, button = 0, action = 0) => {
     const v = new DataView(new ArrayBuffer(12));
-    v.setUint8(0, 1);
+    v.setUint8(0, VERSION);
     v.setUint8(1, type);
     v.setUint16(2, state.seq & 0xffff, true);
     v.setInt32(4, state.counter, true);
@@ -96,7 +97,7 @@ const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 }, accept
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => errors.push(e.message));
-await p.addInitScript((u) => (window.__MW_UUIDS = u), proto.uuids);
+await p.addInitScript(([u, ver]) => ((window.__MW_UUIDS = u), (window.__MW_VERSION = ver)), [proto.uuids, proto.protocolVersion]);
 await p.addInitScript(mock);
 await p.goto(URL);
 await p.waitForTimeout(800);
@@ -147,7 +148,7 @@ await p.waitForTimeout(100);
 check((await nowItem()).includes('ベースマップ'), 'dial short press adopts and moves to BASE');
 const writes = await p.evaluate(() => window.__mw.state.writes);
 const last = writes[writes.length - 1];
-check(last[0] === 1 && last[1] === 1 && last[4] === 2, `state packet item=2 (${last.slice(0, 9)})`);
+check(last[0] === proto.protocolVersion && last[1] === 1 && last[4] === 2, `state packet item=2 (${last.slice(0, 9)})`);
 // BtnA / BtnB
 await p.evaluate(() => window.__mw.press(1, 1));
 await p.waitForTimeout(50);

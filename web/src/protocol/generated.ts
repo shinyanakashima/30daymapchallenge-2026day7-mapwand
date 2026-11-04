@@ -1,5 +1,5 @@
 // AUTO-GENERATED from protocol/mapwand.json by protocol/generate.mjs. Do not edit.
-export const PROTOCOL_VERSION = 1 as const;
+export const PROTOCOL_VERSION = 2 as const;
 export const DEVICE_NAME = "MapWand";
 export const UUIDS = {
   "service": "84cff35f-c3ea-4542-bc50-29b53501e42a",
