@@ -405,11 +405,12 @@ function wrap(text: string, max: number): string[] {
 }
 
 function creditLinesEn(ind: Indicator, base: Basemap, layers: LayerSet, serif: boolean): string[] {
-  const ksj = ['Administrative Boundaries'];
-  if (layers.railways) ksj.push('Railways');
-  if (layers.did) ksj.push('Densely Inhabited Districts');
+  // 国土数値情報には公式の英語名がないので、データの記号を添えて元をたどれるようにする
+  const ksj = ['Administrative Areas N03'];
+  if (layers.railways) ksj.push('Railways N02');
+  if (layers.did) ksj.push('Densely Inhabited Districts A16');
   const src = [
-    `Sources: Statistics Bureau of Japan, 2020 Population Census, Basic Complete Tabulation on Population, ${ind.en.table} (e-Stat)`,
+    `Sources: Statistics Bureau of Japan, 2020 Population Census, Basic Complete Tabulation on Population and Households, ${ind.en.table} (e-Stat)`,
     `National Land Numerical Information (${ksj.join(', ')}), MLIT`,
   ];
   if (layers.capitals || layers.cities) src.push('Wikidata (city locations)');
@@ -430,7 +431,9 @@ export interface CreditLine {
 
 export function creditLines(ind: Indicator, base: Basemap, layers: LayerSet, serif = false, lang: Lang = 'ja'): CreditLine[] {
   const main = lang === 'en' ? creditLinesEn(ind, base, layers, serif) : creditLinesJa(ind, base, layers, serif);
-  const extra = base.extraCredit ? wrapWords(base.extraCredit, 108) : [];
+  // LP DAAC の引用形式の (Year) は、画像を取得した年に置き換える
+  const extraText = base.extraCredit?.replace('(Year)', `(${new Date().getFullYear()})`);
+  const extra = extraText ? wrapWords(extraText, 108) : [];
   return [...main.map((text) => ({ text, small: false })), ...extra.map((text) => ({ text, small: true }))];
 }
 
