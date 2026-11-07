@@ -19,12 +19,14 @@ export interface Indicator {
   diverging: number | null;
   table: string;
   note: string;
+  en: { label: string; unit: string; table: string; note: string };
 }
 
 export interface Prefecture {
   code: string;
   name: string;
   shortName: string;
+  nameEn: string;
   values: Record<IndicatorKey, number>;
   population: number;
   feature: Feature<Polygon | MultiPolygon>;
@@ -49,6 +51,7 @@ export const INDICATORS: Indicator[] = statsJson.indicators.map((i) => ({
   diverging: i.diverging,
   table: i.table,
   note: i.note,
+  en: i.en,
 }));
 
 export const PREFECTURES: Prefecture[] = statsJson.prefectures.map((p) => {
@@ -58,6 +61,7 @@ export const PREFECTURES: Prefecture[] = statsJson.prefectures.map((p) => {
     code: p.code,
     name: p.name,
     shortName: p.name === '北海道' ? p.name : p.name.replace(/[都府県]$/, ''),
+    nameEn: p.name_en,
     values: { density: p.density, growth: p.growth, household: p.household, sexratio: p.sexratio, aging: p.aging },
     population: p.population,
     feature: f,
@@ -101,6 +105,7 @@ export const DID = (feature(didTopo, didTopo.objects.did) as unknown as FeatureC
 
 export interface Place {
   name: string;
+  nameEn: string;
   lonlat: [number, number];
   pref: string;
   population?: number;
@@ -109,17 +114,20 @@ export interface Place {
 /** 県庁所在都市（東京都は新宿区） */
 export const CAPITALS: Place[] = placesJson.capitals.map((c) => ({
   name: c.pref === '13' ? '東京' : c.name.replace(/市$/, ''),
+  nameEn: c.pref === '13' ? 'Tokyo' : c.name_en,
   lonlat: c.lonlat as [number, number],
   pref: c.pref,
 }));
 
 const coordOf = new Map(placesJson.cities.map((c) => [c.code, c.lonlat as [number, number]]));
+const enOf = new Map(placesJson.cities.map((c) => [c.code, c.name_en]));
 const tokyo = placesJson.capitals.find((c) => c.pref === '13')!.lonlat as [number, number];
 
 /** 人口 50 万以上の市と東京 23 区。東京 23 区の位置は都庁（新宿区）の代表点 */
 export const CITIES: Place[] = statsJson.cities.items
   .map((c) => ({
     name: c.name,
+    nameEn: c.code === '13100' ? 'Tokyo 23 wards' : enOf.get(c.code)!,
     lonlat: c.code === '13100' ? tokyo : coordOf.get(c.code)!,
     pref: c.code.slice(0, 2),
     population: c.population,

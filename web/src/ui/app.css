@@ -72,6 +72,11 @@ button.ghost {
   letter-spacing: 0.02em;
 }
 
+.lang {
+  font-size: 13px;
+  padding: 4px 10px;
+}
+
 .timer {
   display: flex;
   align-items: center;
@@ -298,7 +303,8 @@ button.ghost {
   font-weight: 700;
 }
 .items .name {
-  width: 5.5em;
+  width: 6.5em;
+  flex: none;
 }
 .items .val {
   color: var(--muted);

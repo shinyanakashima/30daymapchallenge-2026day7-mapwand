@@ -8,6 +8,8 @@
 """
 import json
 import pathlib
+import re
+import unicodedata
 import sys
 import urllib.parse
 import urllib.request
@@ -29,10 +31,18 @@ def point(wkt: str):
     return [round(float(lon), 5), round(float(lat), 5)]
 
 
+def en_name(b, key: str) -> str:
+    """英語ラベル。都道府県名の表記に合わせ、県名付き（「Kawaguchi, Saitama」）・「-shi」・長音記号を外す"""
+    v = b.get(key, {}).get("value", "").split(",")[0].strip()
+    v = re.sub(r"-shi$", "", v)
+    return "".join(ch for ch in unicodedata.normalize("NFKD", v) if not unicodedata.combining(ch))
+
+
 def main(city_codes: list[str]) -> int:
     caps = sparql(
-        """SELECT ?pref ?code ?cap ?capLabel ?coord WHERE {
+        """SELECT ?pref ?code ?cap ?capLabel ?capEn ?coord WHERE {
           ?pref wdt:P31 wd:Q50337 ; wdt:P429 ?code ; wdt:P36 ?cap .
+          OPTIONAL { ?cap rdfs:label ?capEn . FILTER(LANG(?capEn) = "en") }
           ?cap p:P625 ?st . ?st ps:P625 ?coord . ?st wikibase:rank ?rank .
           FILTER(?rank != wikibase:DeprecatedRank)
           SERVICE wikibase:label { bd:serviceParam wikibase:language "ja". }
@@ -46,13 +56,15 @@ def main(city_codes: list[str]) -> int:
         capitals[pc] = {
             "pref": pc,
             "name": b["capLabel"]["value"],
+            "name_en": en_name(b, "capEn"),
             "wikidata": b["cap"]["value"].rsplit("/", 1)[1],
             "lonlat": point(b["coord"]["value"]),
         }
     values = " ".join(f'"{c}"' for c in city_codes)
     rows = sparql(
-        f"""SELECT ?city ?code ?cityLabel ?coord WHERE {{
+        f"""SELECT ?city ?code ?cityLabel ?cityEn ?coord WHERE {{
           VALUES ?c5 {{ {values} }}
+          OPTIONAL {{ ?city rdfs:label ?cityEn . FILTER(LANG(?cityEn) = "en") }}
           ?city wdt:P429 ?code . FILTER(STRSTARTS(?code, ?c5) && STRLEN(?code) = 6)
           ?city p:P625 ?st . ?st ps:P625 ?coord . ?st wikibase:rank ?rank .
           FILTER(?rank != wikibase:DeprecatedRank)
@@ -67,6 +79,7 @@ def main(city_codes: list[str]) -> int:
         cities[c5] = {
             "code": c5,
             "name": b["cityLabel"]["value"],
+            "name_en": en_name(b, "cityEn"),
             "wikidata": b["city"]["value"].rsplit("/", 1)[1],
             "lonlat": point(b["coord"]["value"]),
         }
@@ -77,6 +90,10 @@ def main(city_codes: list[str]) -> int:
         "cities": [cities[k] for k in sorted(cities)],
     }
     OUT.write_text(json.dumps(doc, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    no_en = [x["name"] for x in [*capitals.values(), *cities.values()] if not x["name_en"]]
+    if no_en:
+        print("英語名がない地点:", no_en, file=sys.stderr)
+        return 1
     missing = [c for c in city_codes if c not in cities]
     print(f"capitals {len(capitals)}/47, cities {len(cities)}/{len(city_codes)} missing={missing}")
     return 0 if len(capitals) == 47 else 1

@@ -29,7 +29,13 @@
         "diverging": null,
         "table": "第1-1表",
         "column": "人口密度（1km2当たり）",
-        "note": "面積は国土地理院「令和2年全国都道府県市区町村別面積調（10月1日時点）」。調査対象外とした地域の面積を除いて算出"
+        "note": "面積は国土地理院「令和2年全国都道府県市区町村別面積調（10月1日時点）」。調査対象外とした地域の面積を除いて算出",
+        "en": {
+          "label": "Population density",
+          "unit": "people/km²",
+          "table": "Table 1-1",
+          "note": "Area from GSI's 2020 area survey (Oct 1), excluding areas outside the census"
+        }
       },
       {
         "key": "growth",
@@ -39,7 +45,13 @@
         "diverging": 0,
         "table": "第1-1表",
         "column": "5年間の人口増減率（2015年→2020年、2015年は2020年の境域に組み替えた値）",
-        "note": "2015年→2020年の5年間"
+        "note": "2015年→2020年の5年間",
+        "en": {
+          "label": "Population change",
+          "unit": "%",
+          "table": "Table 1-1",
+          "note": "Change over the five years 2015–2020"
+        }
       },
       {
         "key": "household",
@@ -49,7 +61,13 @@
         "diverging": null,
         "table": "第1-1表",
         "column": "一般世帯人員 ÷ 一般世帯数",
-        "note": "一般世帯の1世帯当たり人員（施設等の世帯を除く）"
+        "note": "一般世帯の1世帯当たり人員（施設等の世帯を除く）",
+        "en": {
+          "label": "Household size",
+          "unit": "persons/household",
+          "table": "Table 1-1",
+          "note": "Persons per private household (institutional households excluded)"
+        }
       },
       {
         "key": "sexratio",
@@ -59,7 +77,13 @@
         "diverging": null,
         "table": "第1-1表",
         "column": "人口性比",
-        "note": "女性100人に対する男性の数"
+        "note": "女性100人に対する男性の数",
+        "en": {
+          "label": "Sex ratio",
+          "unit": "males per 100 females",
+          "table": "Table 1-1",
+          "note": "Males per 100 females"
+        }
       },
       {
         "key": "aging",
@@ -69,7 +93,13 @@
         "diverging": null,
         "table": "第2-3表",
         "column": "人口構成比［年齢別］65歳以上（国籍総数・男女総数）",
-        "note": "65歳以上人口の割合。年齢「不詳」を除いて算出"
+        "note": "65歳以上人口の割合。年齢「不詳」を除いて算出",
+        "en": {
+          "label": "Aging rate",
+          "unit": "% aged 65+",
+          "table": "Table 2-3",
+          "note": "Share of people aged 65 and over, excluding unknown age"
+        }
       }
     ],
     "cities": {

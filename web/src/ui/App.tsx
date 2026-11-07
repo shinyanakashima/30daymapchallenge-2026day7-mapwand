@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { Action, Button, ITEMS, StateFlag } from '../protocol/generated';
 import { MapWandLink, bluetoothSupported, type LinkInfo, type LinkInput } from '../ble/link';
-import { buildScene } from '../map/scene';
+import { buildScene, titleText } from '../map/scene';
+import { INDICATORS } from '../data/dataset';
 import { SceneSvg } from '../map/SceneSvg';
 import { sceneToPng } from '../map/exportPng';
 import {
@@ -15,6 +16,7 @@ import {
   type EditorAction,
 } from '../state/editor';
 import { parseSettingsFile, toSettingsFile } from '../state/settingsFile';
+import { detectLang, errorText, nameOf, rememberLang, t as tr, type Lang, type Msg } from '../i18n';
 import { Logo } from './Logo';
 import { formatClock, useTimer } from './timer';
 
@@ -68,10 +70,13 @@ export function App() {
   const timer = useTimer(LIMIT_MS);
   const [save, setSave] = useState<SaveResult | null>(null);
   const [saving, setSaving] = useState(false);
-  const [notice, setNotice] = useState<string>('');
+  const [notice, setNotice] = useState<Msg | null>(null);
+  const [lang, setLang] = useState<Lang>(detectLang);
+  const t = useCallback((key: Msg['key'], args?: Msg['args']) => tr(lang, key, args), [lang]);
+  useEffect(() => rememberLang(lang), [lang]);
   const [link, setLink] = useState<LinkInfo>({
     status: bluetoothSupported() ? 'idle' : 'unsupported',
-    message: '',
+    message: null,
     lost: 0,
   });
   const [countsPerStep, setCountsPerStep] = useState<number>(() => loadPref('mw.countsPerStep', 2));
@@ -79,10 +84,13 @@ export function App() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const settings = effectiveSettings(editor);
-  const scene = useMemo(() => buildScene(settings), [settings]);
+  const scene = useMemo(() => buildScene(settings, lang), [settings, lang]);
   const item = ITEMS[editor.itemIndex];
   const cand = currentCandidate(editor);
   const previewing = isPreviewing(editor);
+  /** 候補の表示名。タイトルは選んでいるデータ名を入れて見せる */
+  const candName = (key: string, c: { label: string; en: string }, index: number) =>
+    key === 'title' ? titleText(index, INDICATORS[settings.data], lang) : nameOf(c, lang);
 
   // ---- デバイス入力 → 共通の操作 ----
   const onLinkInput = useCallback((e: LinkInput) => {
@@ -130,10 +138,10 @@ export function App() {
     try {
       const elapsedMs = timer.startedAt === null ? null : timer.stop();
       const at = new Date();
-      const committedScene = buildScene(editor.committed);
+      const committedScene = buildScene(editor.committed, lang);
       const { blob: png, failedTiles } = await sceneToPng(committedScene);
-      if (failedTiles > 0) setNotice(`ベースマップのタイル ${failedTiles} 枚を読み込めず、画像から除いて保存しました`);
-      const json = new Blob([JSON.stringify(toSettingsFile(editor.committed, elapsedMs), null, 2)], {
+      if (failedTiles > 0) setNotice({ key: 'tilesFailed', args: { n: failedTiles } });
+      const json = new Blob([JSON.stringify(toSettingsFile(editor.committed, elapsedMs, lang), null, 2)], {
         type: 'application/json',
       });
       setSave((old) => {
@@ -144,11 +152,11 @@ export function App() {
         return { pngUrl: URL.createObjectURL(png), jsonUrl: URL.createObjectURL(json), base: `mapwand-${stamp(at)}`, elapsedMs, at };
       });
     } catch (e) {
-      setNotice(`保存に失敗しました: ${(e as Error).message}`);
+      setNotice({ key: 'saveFailed', args: { m: (e as Error).message } });
     } finally {
       setSaving(false);
     }
-  }, [editor.committed, timer]);
+  }, [editor.committed, timer, lang]);
 
   const lastSaveReq = useRef(0);
   useEffect(() => {
@@ -195,16 +203,17 @@ export function App() {
 
   const onLoadFile = async (f: File) => {
     try {
-      const { settings: s, warning } = parseSettingsFile(await f.text());
+      const { settings: s, lang: fileLang, warning } = parseSettingsFile(await f.text());
       dispatch({ type: 'load', settings: s });
-      setNotice(warning ?? '設定を読み込みました');
+      if (fileLang) setLang(fileLang); // 地図の文字も保存時と同じ言語で再現する
+      setNotice(warning ?? { key: 'loaded' });
     } catch (e) {
-      setNotice(`読み込めませんでした: ${(e as Error).message}`);
+      setNotice({ key: 'loadFailed', args: { m: errorText(lang, e) } });
     }
   };
 
   const saveJsonNow = () => {
-    const blob = new Blob([JSON.stringify(toSettingsFile(editor.committed, timer.startedAt ? timer.elapsed : null), null, 2)], {
+    const blob = new Blob([JSON.stringify(toSettingsFile(editor.committed, timer.startedAt ? timer.elapsed : null, lang), null, 2)], {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
@@ -213,28 +222,19 @@ export function App() {
   };
 
   const over = timer.elapsed > LIMIT_MS;
-  const linkLabel: Record<LinkInfo['status'], string> = {
-    unsupported: '画面操作モード',
-    idle: '未接続',
-    'bt-off': 'Bluetooth 無効',
-    requesting: '機器選択中',
-    connecting: '接続中',
-    connected: '接続中のMapWand',
-    reconnecting: '再接続中',
-    disconnected: '切断',
-    error: 'エラー',
-  };
-
   return (
     <div className="app">
       <header className="bar">
         <Logo />
+        <button className="ghost lang" onClick={() => setLang(lang === 'ja' ? 'en' : 'ja')} lang={lang === 'ja' ? 'en' : 'ja'}>
+          {t('switchLang')}
+        </button>
         <div className={`timer ${over ? 'over' : ''} ${timer.startedAt === null ? 'idle' : ''}`}>
           {timer.startedAt === null ? (
             <>
               <span className="clock">10:00</span>
               <button className="primary" onClick={timer.start}>
-                制作開始
+                {t('start')}
               </button>
             </>
           ) : (
@@ -244,21 +244,21 @@ export function App() {
               </span>
               <span className="timer-note">
                 {timer.stoppedAt !== null
-                  ? `完成 ${formatClock(timer.elapsed)}`
+                  ? t('doneIn', { t: formatClock(timer.elapsed) })
                   : over
-                    ? '10分を超過'
-                    : '残り'}
+                    ? t('over10')
+                    : t('remaining')}
               </span>
               <button className="ghost" onClick={timer.reset}>
-                リセット
+                {t('reset')}
               </button>
             </>
           )}
         </div>
         <div className={`link link-${link.status}`}>
           <span className="dot" />
-          <span>{linkLabel[link.status]}</span>
-          {link.status === 'connected' && link.encoderOk === false && <span className="warn">ダイヤル未検出</span>}
+          <span>{t(`status.${link.status}`)}</span>
+          {link.status === 'connected' && link.encoderOk === false && <span className="warn">{t('dialMissing')}</span>}
         </div>
       </header>
 
@@ -273,45 +273,45 @@ export function App() {
         <section className="now" style={{ ['--item' as string]: item.led }}>
           <div className="now-item">
             <span className="chip" />
-            {item.label}
+            {nameOf(item, lang)}
             <span className="now-key">{item.short}</span>
           </div>
           <div className="now-value" key={editor.pulse.n}>
-            {item.candidates[cand].label}
+            {candName(item.key, item.candidates[cand], cand)}
           </div>
           <div className="now-meta">
             {cand + 1} / {item.candidates.length}
             {editor.itemIndex !== FINISH_INDEX && (
-              <span className={previewing ? 'badge preview' : 'badge'}>{previewing ? '未採用' : '採用中'}</span>
+              <span className={previewing ? 'badge preview' : 'badge'}>{previewing ? t('preview') : t('adopted')}</span>
             )}
           </div>
           <div className="wand">
-            <button onClick={() => act({ type: 'rotate', steps: -1 })} aria-label="前の候補">
+            <button onClick={() => act({ type: 'rotate', steps: -1 })} aria-label={t('prevCand')}>
               ◀
             </button>
             <button className="adopt" onClick={() => act({ type: 'adopt' })}>
-              {editor.itemIndex === FINISH_INDEX ? '決定' : '採用'}
+              {editor.itemIndex === FINISH_INDEX ? t('decide') : t('adopt')}
             </button>
-            <button onClick={() => act({ type: 'rotate', steps: 1 })} aria-label="次の候補">
+            <button onClick={() => act({ type: 'rotate', steps: 1 })} aria-label={t('nextCand')}>
               ▶
             </button>
           </div>
           <div className="wand sub">
-            <button onClick={() => act({ type: 'prevItem' })}>前の項目</button>
-            <button onClick={() => act({ type: 'revert' })}>戻す</button>
-            <button onClick={() => act({ type: 'nextItem' })}>次の項目</button>
+            <button onClick={() => act({ type: 'prevItem' })}>{t('prevItem')}</button>
+            <button onClick={() => act({ type: 'revert' })}>{t('revert')}</button>
+            <button onClick={() => act({ type: 'nextItem' })}>{t('nextItem')}</button>
           </div>
         </section>
 
         <ol className="items">
           {ITEMS.map((it, i) => {
             const k = it.key as keyof typeof editor.committed | 'finish';
-            const v = k === 'finish' ? '' : it.candidates[editor.committed[k]].label;
+            const v = k === 'finish' ? '' : candName(it.key, it.candidates[editor.committed[k]], editor.committed[k]);
             return (
               <li key={it.key} className={i === editor.itemIndex ? 'on' : ''} style={{ ['--item' as string]: it.led }}>
                 <button onClick={() => act({ type: 'gotoItem', index: i })}>
                   <span className="chip" />
-                  <span className="name">{it.label}</span>
+                  <span className="name">{nameOf(it, lang)}</span>
                   <span className="val">{v}</span>
                 </button>
               </li>
@@ -321,36 +321,37 @@ export function App() {
 
         <section className="help">
           <p>
-            <b>回す</b> 候補を試す　<b>押す</b> 採用して次へ　<b>長押し</b> 戻す
+            <b>{t('help.turn')}</b> {t('help.turnDo')}{'\u2003'}<b>{t('help.press')}</b> {t('help.pressDo')}{'\u2003'}<b>{t('help.hold')}</b>{' '}
+            {t('help.holdDo')}
           </p>
           <p>
-            <b>A / B</b> 次・前の項目
+            <b>A / B</b> {t('help.ab')}
           </p>
-          <p className="keys">キーボード：← → 候補　Enter 採用　Backspace 戻す　↑ ↓ 項目</p>
+          <p className="keys">{t('help.keys')}</p>
         </section>
 
         <section className="conn">
           {link.status === 'unsupported' ? (
-            <p className="muted">このブラウザは Web Bluetooth 非対応です。画面とキーボードで操作できます（Windows 版 Chrome / Edge で接続可）。</p>
+            <p className="muted">{t('unsupported')}</p>
           ) : (
             <>
               <div className="row">
                 {link.status === 'connected' ? (
-                  <button onClick={() => ble.disconnect()}>切断</button>
+                  <button onClick={() => ble.disconnect()}>{t('disconnect')}</button>
                 ) : (
                   <button className="primary" onClick={() => void ble.request()} disabled={link.status === 'requesting' || link.status === 'connecting'}>
-                    MapWandに接続
+                    {t('connect')}
                   </button>
                 )}
                 {(link.status === 'disconnected' || link.status === 'error' || link.status === 'reconnecting') && (
-                  <button onClick={() => void ble.reconnect()}>再接続</button>
+                  <button onClick={() => void ble.reconnect()}>{t('reconnect')}</button>
                 )}
               </div>
-              {link.message && <p className="muted">{link.message}</p>}
+              {link.message && <p className="muted">{t(link.message.key, link.message.args)}</p>}
               <details>
-                <summary>ダイヤル設定</summary>
+                <summary>{t('dialSettings')}</summary>
                 <label>
-                  1候補あたりのカウント
+                  {t('countsPerStep')}
                   <select value={countsPerStep} onChange={(e) => setCountsPerStep(Number(e.target.value))}>
                     {[1, 2, 3, 4].map((n) => (
                       <option key={n} value={n}>
@@ -361,9 +362,9 @@ export function App() {
                 </label>
                 <label>
                   <input type="checkbox" checked={invert} onChange={(e) => setInvert(e.target.checked)} />
-                  回転方向を反転
+                  {t('invert')}
                 </label>
-                {link.lost > 0 && <p className="muted">欠落した通知: {link.lost}</p>}
+                {link.lost > 0 && <p className="muted">{t('lost', { n: link.lost })}</p>}
               </details>
             </>
           )}
@@ -371,9 +372,9 @@ export function App() {
 
         <section className="files">
           <div className="row">
-            <button onClick={() => act({ type: 'gotoItem', index: FINISH_INDEX })}>仕上げへ</button>
-            <button onClick={saveJsonNow}>設定を保存</button>
-            <button onClick={() => fileRef.current?.click()}>設定を開く</button>
+            <button onClick={() => act({ type: 'gotoItem', index: FINISH_INDEX })}>{t('toFinish')}</button>
+            <button onClick={saveJsonNow}>{t('saveSettings')}</button>
+            <button onClick={() => fileRef.current?.click()}>{t('openSettings')}</button>
             <input
               ref={fileRef}
               type="file"
@@ -386,33 +387,34 @@ export function App() {
               }}
             />
           </div>
-          {notice && <p className="muted">{notice}</p>}
+          {notice && <p className="muted">{t(notice.key, notice.args)}</p>}
         </section>
       </aside>
 
       {(save || saving) && (
-        <div className="save-panel" role="dialog" aria-label="保存">
+        <div className="save-panel" role="dialog" aria-label={t('saveDialog')}>
           {saving || !save ? (
-            <p>画像を書き出しています…</p>
+            <p>{t('exporting')}</p>
           ) : (
             <>
-              <img src={save.pngUrl} alt="保存した地図" />
+              <img src={save.pngUrl} alt={t('savedAlt')} />
               <div>
-                <p className="save-title">保存準備完了</p>
+                <p className="save-title">{t('saveReady')}</p>
                 <p className="muted">
                   {save.elapsedMs !== null
-                    ? `制作時間 ${formatClock(save.elapsedMs)}${save.elapsedMs > LIMIT_MS ? '（10分超過）' : ''}`
-                    : 'タイマー未開始'}
-                  ・{save.at.toLocaleTimeString('ja-JP')}
+                    ? t('elapsed', { t: formatClock(save.elapsedMs) }) + (save.elapsedMs > LIMIT_MS ? t('overtime') : '')
+                    : t('timerNotStarted')}
+                  {' · '}
+                  {save.at.toLocaleTimeString(lang === 'ja' ? 'ja-JP' : 'en-US')}
                 </p>
-                <p className="muted">自動で保存されない場合は下のボタンを押してください。</p>
+                <p className="muted">{t('autoNote')}</p>
                 <div className="row">
                   <button className="primary" onClick={() => download(save.pngUrl, `${save.base}.png`)}>
-                    PNG を保存
+                    {t('savePng')}
                   </button>
-                  <button onClick={() => download(save.jsonUrl, `${save.base}.json`)}>設定 JSON</button>
+                  <button onClick={() => download(save.jsonUrl, `${save.base}.json`)}>{t('settingsJson')}</button>
                   <button className="ghost" onClick={() => setSave(null)}>
-                    閉じる
+                    {t('close')}
                   </button>
                 </div>
               </div>

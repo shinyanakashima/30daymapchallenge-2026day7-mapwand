@@ -93,13 +93,13 @@ const mock = () => {
 
 const proto = JSON.parse(fs.readFileSync(path.resolve('../protocol/mapwand.json'), 'utf8'));
 const b = await chromium.launch();
-const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 }, acceptDownloads: true });
+const ctx = await b.newContext({ viewport: { width: 1600, height: 1000 }, acceptDownloads: true, locale: 'ja-JP' });
 const p = await ctx.newPage();
 const errors = [];
 p.on('pageerror', (e) => errors.push(e.message));
 await p.addInitScript(([u, ver]) => ((window.__MW_UUIDS = u), (window.__MW_VERSION = ver)), [proto.uuids, proto.protocolVersion]);
 await p.addInitScript(mock);
-await p.goto(URL);
+await p.goto(URL + (URL.includes('?') ? '&' : '?') + 'lang=ja');
 await p.waitForTimeout(800);
 
 const check = (cond, msg) => {
@@ -225,6 +225,25 @@ for (let i = 0; i < 3; i++) await p.keyboard.press('ArrowRight');
 await p.setInputFiles('input[type=file]', jsonPath);
 await p.waitForTimeout(200);
 check((await p.textContent('.files')).includes('設定を読み込みました'), 'settings restored');
+
+// 英語表示：画面と地図の文字が英語になり、保存設定に言語が残る
+await p.click('button.lang');
+await p.waitForTimeout(300);
+check((await p.textContent('.link')).includes('MapWand connected') || (await p.textContent('.link')).includes('Disconnected'), 'English UI status');
+check((await p.textContent('.now-item')).includes('Data'), `English item name (${(await p.textContent('.now-item')).trim()})`);
+const svgText = await p.$$eval('.map-frame svg text', (els) => els.map((e) => e.textContent).join(' '));
+check(/by prefecture|mapped by|across 47|in Japan, 2020/.test(svgText), 'English map title');
+check(svgText.includes('Sources: Statistics Bureau of Japan'), 'English credits');
+check(new globalThis.URL(p.url()).searchParams.get('lang') === 'en', 'lang=en kept in URL');
+const dl3 = p.waitForEvent('download');
+await p.click('text=Save settings');
+const j3 = await dl3;
+const enPath = `${OUT}/${j3.suggestedFilename()}`;
+await j3.saveAs(enPath);
+check(JSON.parse(fs.readFileSync(enPath, 'utf8')).lang === 'en', 'settings JSON keeps lang=en');
+await p.reload();
+await p.waitForTimeout(500);
+check((await p.textContent('.now-item')).includes('Data'), 'English kept after reload');
 
 check(errors.length === 0, `no page errors ${errors.join(' / ')}`);
 await b.close();

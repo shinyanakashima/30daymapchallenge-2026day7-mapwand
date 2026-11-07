@@ -5,6 +5,7 @@
   {
    "pref": "01",
    "name": "札幌市",
+   "name_en": "Sapporo",
    "wikidata": "Q37951",
    "lonlat": [
     141.35444,
@@ -14,6 +15,7 @@
   {
    "pref": "02",
    "name": "青森市",
+   "name_en": "Aomori",
    "wikidata": "Q146790",
    "lonlat": [
     140.74694,
@@ -23,15 +25,17 @@
   {
    "pref": "03",
    "name": "盛岡市",
+   "name_en": "Morioka",
    "wikidata": "Q200077",
    "lonlat": [
-    141.26915,
-    39.74546
+    141.1545,
+    39.70208
    ]
   },
   {
    "pref": "04",
    "name": "仙台市",
+   "name_en": "Sendai",
    "wikidata": "Q46747",
    "lonlat": [
     140.86942,
@@ -41,6 +45,7 @@
   {
    "pref": "05",
    "name": "秋田市",
+   "name_en": "Akita",
    "wikidata": "Q17139",
    "lonlat": [
     140.10258,
@@ -50,6 +55,7 @@
   {
    "pref": "06",
    "name": "山形市",
+   "name_en": "Yamagata",
    "wikidata": "Q205526",
    "lonlat": [
     140.33961,
@@ -59,6 +65,7 @@
   {
    "pref": "07",
    "name": "福島市",
+   "name_en": "Fukushima",
    "wikidata": "Q161176",
    "lonlat": [
     140.47472,
@@ -68,6 +75,7 @@
   {
    "pref": "08",
    "name": "水戸市",
+   "name_en": "Mito",
    "wikidata": "Q204249",
    "lonlat": [
     140.47125,
@@ -77,6 +85,7 @@
   {
    "pref": "09",
    "name": "宇都宮市",
+   "name_en": "Utsunomiya",
    "wikidata": "Q200589",
    "lonlat": [
     139.88256,
@@ -86,6 +95,7 @@
   {
    "pref": "10",
    "name": "前橋市",
+   "name_en": "Maebashi",
    "wikidata": "Q201613",
    "lonlat": [
     139.06344,
@@ -95,6 +105,7 @@
   {
    "pref": "11",
    "name": "さいたま市",
+   "name_en": "Saitama",
    "wikidata": "Q134635",
    "lonlat": [
     139.64556,
@@ -104,6 +115,7 @@
   {
    "pref": "12",
    "name": "千葉市",
+   "name_en": "Chiba",
    "wikidata": "Q170616",
    "lonlat": [
     140.10636,
@@ -113,6 +125,7 @@
   {
    "pref": "13",
    "name": "新宿区",
+   "name_en": "Shinjuku",
    "wikidata": "Q179645",
    "lonlat": [
     139.70342,
@@ -122,6 +135,7 @@
   {
    "pref": "14",
    "name": "横浜市",
+   "name_en": "Yokohama",
    "wikidata": "Q38283",
    "lonlat": [
     139.63422,
@@ -131,6 +145,7 @@
   {
    "pref": "15",
    "name": "新潟市",
+   "name_en": "Niigata",
    "wikidata": "Q179691",
    "lonlat": [
     139.03639,
@@ -140,15 +155,17 @@
   {
    "pref": "16",
    "name": "富山市",
+   "name_en": "Toyama",
    "wikidata": "Q204266",
    "lonlat": [
-    137.29861,
-    36.55139
+    137.21369,
+    36.69592
    ]
   },
   {
    "pref": "17",
    "name": "金沢市",
+   "name_en": "Kanazawa",
    "wikidata": "Q191130",
    "lonlat": [
     136.6565,
@@ -158,6 +175,7 @@
   {
    "pref": "18",
    "name": "福井市",
+   "name_en": "Fukui",
    "wikidata": "Q201618",
    "lonlat": [
     136.21958,
@@ -167,6 +185,7 @@
   {
    "pref": "19",
    "name": "甲府市",
+   "name_en": "Kofu",
    "wikidata": "Q201932",
    "lonlat": [
     138.56822,
@@ -176,6 +195,7 @@
   {
    "pref": "20",
    "name": "長野市",
+   "name_en": "Nagano",
    "wikidata": "Q128849",
    "lonlat": [
     138.19469,
@@ -185,6 +205,7 @@
   {
    "pref": "21",
    "name": "岐阜市",
+   "name_en": "Gifu",
    "wikidata": "Q45798",
    "lonlat": [
     136.75944,
@@ -194,6 +215,7 @@
   {
    "pref": "22",
    "name": "静岡市",
+   "name_en": "Shizuoka",
    "wikidata": "Q174691",
    "lonlat": [
     138.3825,
@@ -203,15 +225,17 @@
   {
    "pref": "23",
    "name": "名古屋市",
+   "name_en": "Nagoya",
    "wikidata": "Q11751",
    "lonlat": [
-    136.90641,
-    35.18147
+    136.90639,
+    35.18139
    ]
   },
   {
    "pref": "24",
    "name": "津市",
+   "name_en": "Tsu",
    "wikidata": "Q203027",
    "lonlat": [
     136.50578,
@@ -221,15 +245,17 @@
   {
    "pref": "25",
    "name": "大津市",
+   "name_en": "Otsu",
    "wikidata": "Q202907",
    "lonlat": [
-    135.86866,
-    35.09887
+    135.85481,
+    35.01779
    ]
   },
   {
    "pref": "26",
    "name": "京都市",
+   "name_en": "Kyoto",
    "wikidata": "Q34600",
    "lonlat": [
     135.76811,
@@ -239,6 +265,7 @@
   {
    "pref": "27",
    "name": "大阪市",
+   "name_en": "Osaka",
    "wikidata": "Q35765",
    "lonlat": [
     135.50211,
@@ -248,6 +275,7 @@
   {
    "pref": "28",
    "name": "神戸市",
+   "name_en": "Kobe",
    "wikidata": "Q48320",
    "lonlat": [
     135.19544,
@@ -257,6 +285,7 @@
   {
    "pref": "29",
    "name": "奈良市",
+   "name_en": "Nara",
    "wikidata": "Q169134",
    "lonlat": [
     135.80478,
@@ -266,6 +295,7 @@
   {
    "pref": "30",
    "name": "和歌山市",
+   "name_en": "Wakayama",
    "wikidata": "Q200747",
    "lonlat": [
     135.17075,
@@ -275,6 +305,7 @@
   {
    "pref": "31",
    "name": "鳥取市",
+   "name_en": "Tottori",
    "wikidata": "Q200731",
    "lonlat": [
     134.22161,
@@ -284,6 +315,7 @@
   {
    "pref": "32",
    "name": "松江市",
+   "name_en": "Matsue",
    "wikidata": "Q207321",
    "lonlat": [
     133.04853,
@@ -293,6 +325,7 @@
   {
    "pref": "33",
    "name": "岡山市",
+   "name_en": "Okayama",
    "wikidata": "Q200078",
    "lonlat": [
     133.91958,
@@ -302,15 +335,17 @@
   {
    "pref": "34",
    "name": "広島市",
+   "name_en": "Hiroshima",
    "wikidata": "Q34664",
    "lonlat": [
-    132.45531,
-    34.38525
+    132.45194,
+    34.39139
    ]
   },
   {
    "pref": "35",
    "name": "山口市",
+   "name_en": "Yamaguchi",
    "wikidata": "Q207876",
    "lonlat": [
     131.47378,
@@ -320,6 +355,7 @@
   {
    "pref": "36",
    "name": "徳島市",
+   "name_en": "Tokushima",
    "wikidata": "Q207309",
    "lonlat": [
     134.55494,
@@ -329,6 +365,7 @@
   {
    "pref": "37",
    "name": "高松市",
+   "name_en": "Takamatsu",
    "wikidata": "Q200707",
    "lonlat": [
     134.04661,
@@ -338,15 +375,17 @@
   {
    "pref": "38",
    "name": "松山市",
+   "name_en": "Matsuyama",
    "wikidata": "Q200022",
    "lonlat": [
-    132.76574,
-    33.83916
+    132.76564,
+    33.83917
    ]
   },
   {
    "pref": "39",
    "name": "高知市",
+   "name_en": "Kochi",
    "wikidata": "Q200251",
    "lonlat": [
     133.53122,
@@ -356,6 +395,7 @@
   {
    "pref": "40",
    "name": "福岡市",
+   "name_en": "Fukuoka",
    "wikidata": "Q26600",
    "lonlat": [
     130.40172,
@@ -365,6 +405,7 @@
   {
    "pref": "41",
    "name": "佐賀市",
+   "name_en": "Saga",
    "wikidata": "Q209766",
    "lonlat": [
     130.30083,
@@ -374,6 +415,7 @@
   {
    "pref": "42",
    "name": "長崎市",
+   "name_en": "Nagasaki",
    "wikidata": "Q38234",
    "lonlat": [
     129.87964,
@@ -383,6 +425,7 @@
   {
    "pref": "43",
    "name": "熊本市",
+   "name_en": "Kumamoto",
    "wikidata": "Q199889",
    "lonlat": [
     130.70786,
@@ -392,6 +435,7 @@
   {
    "pref": "44",
    "name": "大分市",
+   "name_en": "Oita",
    "wikidata": "Q199609",
    "lonlat": [
     131.60936,
@@ -401,6 +445,7 @@
   {
    "pref": "45",
    "name": "宮崎市",
+   "name_en": "Miyazaki",
    "wikidata": "Q204308",
    "lonlat": [
     131.42019,
@@ -410,6 +455,7 @@
   {
    "pref": "46",
    "name": "鹿児島市",
+   "name_en": "Kagoshima",
    "wikidata": "Q15674",
    "lonlat": [
     130.55714,
@@ -419,6 +465,7 @@
   {
    "pref": "47",
    "name": "那覇市",
+   "name_en": "Naha",
    "wikidata": "Q181966",
    "lonlat": [
     127.67917,
@@ -430,6 +477,7 @@
   {
    "code": "01100",
    "name": "札幌市",
+   "name_en": "Sapporo",
    "wikidata": "Q37951",
    "lonlat": [
     141.35444,
@@ -439,6 +487,7 @@
   {
    "code": "04100",
    "name": "仙台市",
+   "name_en": "Sendai",
    "wikidata": "Q46747",
    "lonlat": [
     140.86942,
@@ -448,6 +497,7 @@
   {
    "code": "09201",
    "name": "宇都宮市",
+   "name_en": "Utsunomiya",
    "wikidata": "Q200589",
    "lonlat": [
     139.88256,
@@ -457,6 +507,7 @@
   {
    "code": "11100",
    "name": "さいたま市",
+   "name_en": "Saitama",
    "wikidata": "Q134635",
    "lonlat": [
     139.64556,
@@ -466,6 +517,7 @@
   {
    "code": "11203",
    "name": "川口市",
+   "name_en": "Kawaguchi",
    "wikidata": "Q387136",
    "lonlat": [
     139.72414,
@@ -475,6 +527,7 @@
   {
    "code": "12100",
    "name": "千葉市",
+   "name_en": "Chiba",
    "wikidata": "Q170616",
    "lonlat": [
     140.10636,
@@ -484,6 +537,7 @@
   {
    "code": "12204",
    "name": "船橋市",
+   "name_en": "Funabashi",
    "wikidata": "Q271417",
    "lonlat": [
     139.98256,
@@ -493,6 +547,7 @@
   {
    "code": "13201",
    "name": "八王子市",
+   "name_en": "Hachioji",
    "wikidata": "Q208863",
    "lonlat": [
     139.316,
@@ -502,6 +557,7 @@
   {
    "code": "14100",
    "name": "横浜市",
+   "name_en": "Yokohama",
    "wikidata": "Q38283",
    "lonlat": [
     139.63422,
@@ -511,6 +567,7 @@
   {
    "code": "14130",
    "name": "川崎市",
+   "name_en": "Kawasaki",
    "wikidata": "Q164234",
    "lonlat": [
     139.703,
@@ -520,6 +577,7 @@
   {
    "code": "14150",
    "name": "相模原市",
+   "name_en": "Sagamihara",
    "wikidata": "Q209779",
    "lonlat": [
     139.37314,
@@ -529,6 +587,7 @@
   {
    "code": "15100",
    "name": "新潟市",
+   "name_en": "Niigata",
    "wikidata": "Q179691",
    "lonlat": [
     139.03639,
@@ -538,6 +597,7 @@
   {
    "code": "22100",
    "name": "静岡市",
+   "name_en": "Shizuoka",
    "wikidata": "Q174691",
    "lonlat": [
     138.3825,
@@ -547,6 +607,7 @@
   {
    "code": "22130",
    "name": "浜松市",
+   "name_en": "Hamamatsu",
    "wikidata": "Q185125",
    "lonlat": [
     137.72619,
@@ -556,6 +617,7 @@
   {
    "code": "23100",
    "name": "名古屋市",
+   "name_en": "Nagoya",
    "wikidata": "Q11751",
    "lonlat": [
     136.90641,
@@ -565,6 +627,7 @@
   {
    "code": "26100",
    "name": "京都市",
+   "name_en": "Kyoto",
    "wikidata": "Q34600",
    "lonlat": [
     135.76811,
@@ -574,6 +637,7 @@
   {
    "code": "27100",
    "name": "大阪市",
+   "name_en": "Osaka",
    "wikidata": "Q35765",
    "lonlat": [
     135.50211,
@@ -583,6 +647,7 @@
   {
    "code": "27140",
    "name": "堺市",
+   "name_en": "Sakai",
    "wikidata": "Q193428",
    "lonlat": [
     135.483,
@@ -592,6 +657,7 @@
   {
    "code": "28100",
    "name": "神戸市",
+   "name_en": "Kobe",
    "wikidata": "Q48320",
    "lonlat": [
     135.19544,
@@ -601,6 +667,7 @@
   {
    "code": "28201",
    "name": "姫路市",
+   "name_en": "Himeji",
    "wikidata": "Q209801",
    "lonlat": [
     134.68539,
@@ -610,6 +677,7 @@
   {
    "code": "33100",
    "name": "岡山市",
+   "name_en": "Okayama",
    "wikidata": "Q200078",
    "lonlat": [
     133.91958,
@@ -619,6 +687,7 @@
   {
    "code": "34100",
    "name": "広島市",
+   "name_en": "Hiroshima",
    "wikidata": "Q34664",
    "lonlat": [
     132.45531,
@@ -628,6 +697,7 @@
   {
    "code": "38201",
    "name": "松山市",
+   "name_en": "Matsuyama",
    "wikidata": "Q200022",
    "lonlat": [
     132.76574,
@@ -637,6 +707,7 @@
   {
    "code": "40100",
    "name": "北九州市",
+   "name_en": "Kitakyushu",
    "wikidata": "Q188806",
    "lonlat": [
     130.84659,
@@ -646,6 +717,7 @@
   {
    "code": "40130",
    "name": "福岡市",
+   "name_en": "Fukuoka",
    "wikidata": "Q26600",
    "lonlat": [
     130.40172,
@@ -655,6 +727,7 @@
   {
    "code": "43100",
    "name": "熊本市",
+   "name_en": "Kumamoto",
    "wikidata": "Q199889",
    "lonlat": [
     130.70786,
@@ -664,6 +737,7 @@
   {
    "code": "46201",
    "name": "鹿児島市",
+   "name_en": "Kagoshima",
    "wikidata": "Q15674",
    "lonlat": [
     130.55714,

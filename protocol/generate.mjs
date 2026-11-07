@@ -9,7 +9,9 @@ const def = JSON.parse(fs.readFileSync(path.join(root, 'protocol/mapwand.json'),
 const banner = 'AUTO-GENERATED from protocol/mapwand.json by protocol/generate.mjs. Do not edit.';
 
 for (const it of def.items) {
+  if (!it.en) throw new Error(`item needs an English label: ${it.key}`);
   for (const c of it.candidates) {
+    if (!c.en) throw new Error(`candidate needs an English label: ${it.key}/${c.label}`);
     if (!/^[\x20-\x7e]{1,10}$/.test(c.short)) throw new Error(`short name must be ASCII <=10: ${c.short}`);
   }
 }

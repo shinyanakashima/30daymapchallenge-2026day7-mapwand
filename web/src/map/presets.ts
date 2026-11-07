@@ -174,34 +174,40 @@ export interface Basemap {
   fillOpacity: number;
   opacity: number;
   credit: string;
+  creditEn: string;
   /** 小縮尺で必要な追加の出典表記 */
   extraCredit?: string;
 }
 
 const GSI = 'https://cyberjapandata.gsi.go.jp/xyz';
 export const BASEMAPS: Basemap[] = [
-  { id: 'none', url: null, zoom: [0, 0], mode: 'under', fillOpacity: 1, opacity: 1, credit: '' },
+  { id: 'none', url: null, zoom: [0, 0], mode: 'under', fillOpacity: 1, opacity: 1, credit: '', creditEn: '' },
   {
     id: 'pale', url: `${GSI}/pale/{z}/{x}/{y}.png`, zoom: [2, 18], mode: 'under', fillOpacity: 0.78, opacity: 1,
     credit: '地理院タイル（淡色地図）',
+    creditEn: 'GSI Tiles (Pale Map)',
     extraCredit: 'Shoreline data is derived from: United States. National Imagery and Mapping Agency. "Vector Map Level 0 (VMAP0)."',
   },
   {
     id: 'std', url: `${GSI}/std/{z}/{x}/{y}.png`, zoom: [2, 18], mode: 'under', fillOpacity: 0.72, opacity: 1,
     credit: '地理院タイル（標準地図）',
+    creditEn: 'GSI Tiles (Standard Map)',
     extraCredit: 'The bathymetric contours are derived from those contained within the GEBCO Digital Atlas.',
   },
   {
     id: 'blank', url: `${GSI}/blank/{z}/{x}/{y}.png`, zoom: [5, 14], mode: 'under', fillOpacity: 0.85, opacity: 1,
     credit: '地理院タイル（白地図）',
+    creditEn: 'GSI Tiles (Blank Map)',
   },
   {
     id: 'hillshade', url: `${GSI}/hillshademap/{z}/{x}/{y}.png`, zoom: [2, 16], mode: 'multiply', fillOpacity: 1, opacity: 0.6,
     credit: '地理院タイル（陰影起伏図）',
+    creditEn: 'GSI Tiles (Hillshade)',
   },
   {
     id: 'photo', url: `${GSI}/seamlessphoto/{z}/{x}/{y}.jpg`, zoom: [2, 18], mode: 'under', fillOpacity: 0.68, opacity: 1,
     credit: '地理院タイル（全国最新写真（シームレス））',
+    creditEn: 'GSI Tiles (Seamless Photo)',
     extraCredit:
       'Images on 世界衛星モザイク画像 obtained from site https://lpdaac.usgs.gov/data_access maintained by the NASA Land Processes Distributed Active Archive Center (LP DAAC), USGS/Earth Resources Observation and Science (EROS) Center, Sioux Falls, South Dakota, (Year). Source of image data product.',
   },

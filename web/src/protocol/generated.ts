@@ -19,27 +19,33 @@ export const ITEMS = [
   {
     "key": "data",
     "label": "データ",
+    "en": "Data",
     "short": "DATA",
     "led": "#ff50b4",
     "candidates": [
       {
         "label": "人口密度",
+        "en": "Population density",
         "short": "DENSITY"
       },
       {
         "label": "人口増減率",
+        "en": "Population change",
         "short": "GROWTH"
       },
       {
         "label": "平均世帯人員",
+        "en": "Household size",
         "short": "HOUSEHOLD"
       },
       {
         "label": "人口性比",
+        "en": "Sex ratio",
         "short": "SEX RATIO"
       },
       {
         "label": "高齢化率",
+        "en": "Aging rate",
         "short": "AGING"
       }
     ]
@@ -47,31 +53,38 @@ export const ITEMS = [
   {
     "key": "style",
     "label": "スタイル",
+    "en": "Style",
     "short": "STYLE",
     "led": "#c040ff",
     "candidates": [
       {
         "label": "白地",
+        "en": "Plain",
         "short": "SHIRO"
       },
       {
         "label": "和紙",
+        "en": "Washi paper",
         "short": "WASHI"
       },
       {
         "label": "夜",
+        "en": "Night",
         "short": "YORU"
       },
       {
         "label": "雪",
+        "en": "Snow",
         "short": "YUKI"
       },
       {
         "label": "新聞",
+        "en": "Newspaper",
         "short": "SHINBUN"
       },
       {
         "label": "若草",
+        "en": "Spring green",
         "short": "WAKAKUSA"
       }
     ]
@@ -79,31 +92,38 @@ export const ITEMS = [
   {
     "key": "base",
     "label": "ベースマップ",
+    "en": "Basemap",
     "short": "BASE",
     "led": "#b07a3a",
     "candidates": [
       {
         "label": "なし",
+        "en": "None",
         "short": "NONE"
       },
       {
         "label": "淡色地図",
+        "en": "Pale",
         "short": "PALE"
       },
       {
         "label": "標準地図",
+        "en": "Standard",
         "short": "STANDARD"
       },
       {
         "label": "白地図",
+        "en": "Blank",
         "short": "BLANK"
       },
       {
         "label": "陰影起伏図",
+        "en": "Hillshade",
         "short": "HILLSHADE"
       },
       {
         "label": "写真",
+        "en": "Photo",
         "short": "PHOTO"
       }
     ]
@@ -111,31 +131,38 @@ export const ITEMS = [
   {
     "key": "color",
     "label": "配色",
+    "en": "Colors",
     "short": "COLOR",
     "led": "#ff7a00",
     "candidates": [
       {
         "label": "柿",
+        "en": "Persimmon",
         "short": "KAKI"
       },
       {
         "label": "藍",
+        "en": "Indigo",
         "short": "AI"
       },
       {
         "label": "夕焼",
+        "en": "Sunset",
         "short": "YUYAKE"
       },
       {
         "label": "若葉",
+        "en": "Young leaf",
         "short": "WAKABA"
       },
       {
         "label": "紫",
+        "en": "Purple",
         "short": "MURASAKI"
       },
       {
         "label": "墨",
+        "en": "Ink",
         "short": "SUMI"
       }
     ]
@@ -143,27 +170,33 @@ export const ITEMS = [
   {
     "key": "classes",
     "label": "階級",
+    "en": "Classes",
     "short": "CLASS",
     "led": "#20d040",
     "candidates": [
       {
         "label": "3階級",
+        "en": "3 classes",
         "short": "3 CLASS"
       },
       {
         "label": "4階級",
+        "en": "4 classes",
         "short": "4 CLASS"
       },
       {
         "label": "5階級",
+        "en": "5 classes",
         "short": "5 CLASS"
       },
       {
         "label": "6階級",
+        "en": "6 classes",
         "short": "6 CLASS"
       },
       {
         "label": "7階級",
+        "en": "7 classes",
         "short": "7 CLASS"
       }
     ]
@@ -171,27 +204,33 @@ export const ITEMS = [
   {
     "key": "line",
     "label": "境界線",
+    "en": "Borders",
     "short": "LINE",
     "led": "#00c8d8",
     "candidates": [
       {
         "label": "極細",
+        "en": "Extra fine",
         "short": "XFINE"
       },
       {
         "label": "細",
+        "en": "Fine",
         "short": "FINE"
       },
       {
         "label": "標準",
+        "en": "Normal",
         "short": "NORMAL"
       },
       {
         "label": "太",
+        "en": "Bold",
         "short": "BOLD"
       },
       {
         "label": "極太",
+        "en": "Extra bold",
         "short": "XBOLD"
       }
     ]
@@ -199,19 +238,23 @@ export const ITEMS = [
   {
     "key": "label",
     "label": "地名",
+    "en": "Labels",
     "short": "LABEL",
     "led": "#ffd000",
     "candidates": [
       {
         "label": "地名なし",
+        "en": "None",
         "short": "NONE"
       },
       {
         "label": "主要地名",
+        "en": "Major",
         "short": "MAJOR"
       },
       {
         "label": "全都道府県名",
+        "en": "All prefectures",
         "short": "ALL 47"
       }
     ]
@@ -219,39 +262,48 @@ export const ITEMS = [
   {
     "key": "layer",
     "label": "レイヤー",
+    "en": "Layers",
     "short": "LAYER",
     "led": "#a8ff3c",
     "candidates": [
       {
         "label": "なし",
+        "en": "None",
         "short": "NONE"
       },
       {
         "label": "県庁所在地",
+        "en": "Capitals",
         "short": "CAPITALS"
       },
       {
         "label": "主要都市の人口",
+        "en": "City population",
         "short": "CITIES"
       },
       {
         "label": "鉄道",
+        "en": "Railways",
         "short": "RAILWAYS"
       },
       {
         "label": "人口集中地区",
+        "en": "DIDs",
         "short": "DID"
       },
       {
         "label": "鉄道＋県庁所在地",
+        "en": "Railways + capitals",
         "short": "RAIL+CAP"
       },
       {
         "label": "人口集中地区＋鉄道",
+        "en": "DIDs + railways",
         "short": "DID+RAIL"
       },
       {
         "label": "すべて",
+        "en": "All",
         "short": "ALL"
       }
     ]
@@ -259,19 +311,23 @@ export const ITEMS = [
   {
     "key": "frame",
     "label": "構図",
+    "en": "Framing",
     "short": "FRAME",
     "led": "#3060ff",
     "candidates": [
       {
         "label": "全景",
+        "en": "Full",
         "short": "FULL"
       },
       {
         "label": "余白広め",
+        "en": "Wide margins",
         "short": "WIDE"
       },
       {
         "label": "寄り",
+        "en": "Close-up",
         "short": "CLOSE"
       }
     ]
@@ -279,23 +335,28 @@ export const ITEMS = [
   {
     "key": "title",
     "label": "タイトル",
+    "en": "Title",
     "short": "TITLE",
     "led": "#ffffff",
     "candidates": [
       {
         "label": "都道府県別 {指標}",
+        "en": "{Indicator} by prefecture",
         "short": "BY PREF"
       },
       {
         "label": "{指標}でみる日本",
+        "en": "Japan, mapped by {indicator}",
         "short": "JAPAN BY"
       },
       {
         "label": "47都道府県の{指標}",
+        "en": "{Indicator} across 47 prefectures",
         "short": "47 PREFS"
       },
       {
         "label": "日本の{指標} 2020",
+        "en": "{Indicator} in Japan, 2020",
         "short": "JP 2020"
       }
     ]
@@ -303,15 +364,18 @@ export const ITEMS = [
   {
     "key": "finish",
     "label": "仕上げ",
+    "en": "Finish",
     "short": "FINISH",
     "led": "#ff2040",
     "candidates": [
       {
         "label": "保存する",
+        "en": "Save",
         "short": "SAVE"
       },
       {
         "label": "編集へ戻る",
+        "en": "Back to editing",
         "short": "BACK"
       }
     ]

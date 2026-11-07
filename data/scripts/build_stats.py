@@ -19,31 +19,45 @@ RAW = ROOT / "data/raw"
 OUT = ROOT / "data/processed"
 CITY_MIN = 500_000  # 主要都市：人口 50 万以上の市と東京都特別区部
 
+# 都道府県の英語名（ヘボン式ローマ字、長音記号なし）
+PREF_EN = [
+    "Hokkaido", "Aomori", "Iwate", "Miyagi", "Akita", "Yamagata", "Fukushima", "Ibaraki", "Tochigi", "Gunma",
+    "Saitama", "Chiba", "Tokyo", "Kanagawa", "Niigata", "Toyama", "Ishikawa", "Fukui", "Yamanashi", "Nagano",
+    "Gifu", "Shizuoka", "Aichi", "Mie", "Shiga", "Kyoto", "Osaka", "Hyogo", "Nara", "Wakayama",
+    "Tottori", "Shimane", "Okayama", "Hiroshima", "Yamaguchi", "Tokushima", "Kagawa", "Ehime", "Kochi", "Fukuoka",
+    "Saga", "Nagasaki", "Kumamoto", "Oita", "Miyazaki", "Kagoshima", "Okinawa",
+]
+
 INDICATORS = [
     {
         "key": "density", "label": "人口密度", "unit": "人/km²", "digits": 1, "diverging": None,
         "table": "第1-1表", "column": "人口密度（1km2当たり）",
         "note": "面積は国土地理院「令和2年全国都道府県市区町村別面積調（10月1日時点）」。調査対象外とした地域の面積を除いて算出",
+        "en": {"label": "Population density", "unit": "people/km²", "table": "Table 1-1", "note": "Area from GSI's 2020 area survey (Oct 1), excluding areas outside the census"},
     },
     {
         "key": "growth", "label": "人口増減率", "unit": "%", "digits": 2, "diverging": 0,
         "table": "第1-1表", "column": "5年間の人口増減率（2015年→2020年、2015年は2020年の境域に組み替えた値）",
         "note": "2015年→2020年の5年間",
+        "en": {"label": "Population change", "unit": "%", "table": "Table 1-1", "note": "Change over the five years 2015–2020"},
     },
     {
         "key": "household", "label": "平均世帯人員", "unit": "人/世帯", "digits": 2, "diverging": None,
         "table": "第1-1表", "column": "一般世帯人員 ÷ 一般世帯数",
         "note": "一般世帯の1世帯当たり人員（施設等の世帯を除く）",
+        "en": {"label": "Household size", "unit": "persons/household", "table": "Table 1-1", "note": "Persons per private household (institutional households excluded)"},
     },
     {
         "key": "sexratio", "label": "人口性比", "unit": "女性100人当たり男性", "digits": 1, "diverging": None,
         "table": "第1-1表", "column": "人口性比",
         "note": "女性100人に対する男性の数",
+        "en": {"label": "Sex ratio", "unit": "males per 100 females", "table": "Table 1-1", "note": "Males per 100 females"},
     },
     {
         "key": "aging", "label": "高齢化率", "unit": "%", "digits": 1, "diverging": None,
         "table": "第2-3表", "column": "人口構成比［年齢別］65歳以上（国籍総数・男女総数）",
         "note": "65歳以上人口の割合。年齢「不詳」を除いて算出",
+        "en": {"label": "Aging rate", "unit": "% aged 65+", "table": "Table 2-3", "note": "Share of people aged 65 and over, excluding unknown age"},
     },
 ]
 
@@ -74,6 +88,7 @@ def read_t11():
         if r[0] == "a" and code5.endswith("000"):
             rec = {
                 "code": code5[:2], "name": name, "population": int(r[c["pop"]]),
+                "name_en": PREF_EN[int(code5[:2]) - 1] if code5[:2] != "00" else "Japan",
                 "area_km2": float(r[c["area"]]),
                 "density": float(r[c["density"]]),
                 "growth": round(float(r[c["growth"]]), 3),
@@ -85,7 +100,11 @@ def read_t11():
             else:
                 prefs[rec["code"]] = rec
         elif (r[0] in ("1", "2") or code5 == "13100") and isinstance(r[7], int) and r[7] >= CITY_MIN:
-            cities.append({"code": code5, "name": "東京23区" if code5 == "13100" else name, "population": r[7]})
+            cities.append({
+                "code": code5,
+                "name": "東京23区" if code5 == "13100" else name,
+                "population": r[7],
+            })
     return prefs, national, cities
 
 

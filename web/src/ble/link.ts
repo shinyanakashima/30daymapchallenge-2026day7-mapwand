@@ -1,6 +1,7 @@
 // MapWand との BLE 接続（Web Bluetooth, ブラウザ = Central / GATT クライアント）。
 import { DEVICE_NAME, InputType, PROTOCOL_VERSION, UUIDS } from '../protocol/generated';
 import { RotaryTracker, decodeInput, encodeState, type InputPacket, type StatePacket } from '../protocol/codec';
+import type { Msg, MsgKey } from '../i18n';
 
 export type LinkStatus =
   | 'unsupported' // navigator.bluetooth なし
@@ -19,7 +20,8 @@ export type LinkInput =
 
 export interface LinkInfo {
   status: LinkStatus;
-  message: string;
+  /** 表示用のメッセージ（画面の言語で翻訳する） */
+  message: Msg | null;
   deviceName?: string;
   encoderOk?: boolean;
   lost: number;
@@ -40,29 +42,30 @@ export class MapWandLink {
   private manualDisconnect = false;
   private reconnectTimer: number | null = null;
   readonly tracker = new RotaryTracker();
-  info: LinkInfo = { status: bluetoothSupported() ? 'idle' : 'unsupported', message: '', lost: 0 };
+  info: LinkInfo = { status: bluetoothSupported() ? 'idle' : 'unsupported', message: null, lost: 0 };
 
   constructor(
     private onInput: (e: LinkInput) => void,
     private onInfo: Listener,
   ) {}
 
-  private set(status: LinkStatus, message = '', extra: Partial<LinkInfo> = {}) {
+  private set(status: LinkStatus, key: MsgKey | null, extra: Partial<LinkInfo> = {}, args?: Msg['args']) {
+    const message = key ? { key, args } : null;
     this.info = { ...this.info, status, message, lost: this.tracker.lost, ...extra };
     this.onInfo(this.info);
   }
 
   /** 『MapWandに接続』ボタンから呼ぶ（ユーザー操作が必要） */
   async request() {
-    if (!bluetoothSupported()) return this.set('unsupported', 'このブラウザは Web Bluetooth に対応していません');
+    if (!bluetoothSupported()) return this.set('unsupported', 'link.unsupported');
     try {
       if (navigator.bluetooth.getAvailability && !(await navigator.bluetooth.getAvailability())) {
-        return this.set('bt-off', 'PC の Bluetooth が無効か、アダプターが見つかりません');
+        return this.set('bt-off', 'link.btOff');
       }
     } catch {
       /* getAvailability 非対応はそのまま続ける */
     }
-    this.set('requesting', '機器選択で MapWand を選んでください');
+    this.set('requesting', 'link.choose');
     let device: BluetoothDevice;
     try {
       device = await navigator.bluetooth.requestDevice({
@@ -73,15 +76,12 @@ export class MapWandLink {
       const err = e as DOMException;
       if (err.name === 'NotFoundError') {
         const cancelled = /cancel/i.test(err.message);
-        return this.set(
-          this.device ? 'disconnected' : 'idle',
-          cancelled ? '機器選択がキャンセルされました' : 'MapWand が見つかりません（電源と距離を確認）',
-        );
+        return this.set(this.device ? 'disconnected' : 'idle', cancelled ? 'link.cancelled' : 'link.notFound');
       }
       if (err.name === 'SecurityError' || err.name === 'NotAllowedError') {
-        return this.set('error', 'Bluetooth の利用が許可されていません（ブラウザの権限を確認）');
+        return this.set('error', 'link.denied');
       }
-      return this.set('error', `機器選択に失敗しました: ${err.message}`);
+      return this.set('error', 'link.chooseFailed', {}, { m: err.message });
     }
     if (this.device && this.device !== device) this.disconnect();
     this.device = device;
@@ -113,9 +113,8 @@ export class MapWandLink {
   private async connect(isRetry = false) {
     const device = this.device!;
     this.manualDisconnect = false;
-    this.set(isRetry ? 'reconnecting' : 'connecting', `${device.name ?? DEVICE_NAME} に接続しています`, {
-      deviceName: device.name ?? DEVICE_NAME,
-    });
+    const name = device.name ?? DEVICE_NAME;
+    this.set(isRetry ? 'reconnecting' : 'connecting', 'link.connecting', { deviceName: name }, { name });
     try {
       const server = await device.gatt!.connect();
       const service = await server.getPrimaryService(UUIDS.service);
@@ -125,14 +124,14 @@ export class MapWandLink {
       // 現在値を読み、プロトコルバージョン照合と回転基準値の取り直し
       const snap = decodeInput(await this.input.readValue());
       if (snap.version !== PROTOCOL_VERSION) {
-        this.set('error', `プロトコルが一致しません（機器 v${snap.version} / 画面 v${PROTOCOL_VERSION}）。ファームウェアを書き直してください`);
+        this.set('error', 'link.mismatch', {}, { d: snap.version, w: PROTOCOL_VERSION });
         device.gatt!.disconnect();
         return;
       }
       this.tracker.reset(snap.counter, snap.seq);
       this.input.addEventListener('characteristicvaluechanged', this.handleNotify);
       await this.input.startNotifications();
-      this.set('connected', '接続しました', { encoderOk: (snap.deviceFlags & 1) === 1 });
+      this.set('connected', 'link.connected', { encoderOk: (snap.deviceFlags & 1) === 1 });
       // 購読開始後に全状態を同期
       this.writing = false;
       if (this.lastState) this.sendState(this.lastState);
@@ -141,7 +140,7 @@ export class MapWandLink {
       this.input = null;
       this.state = null;
       if (this.manualDisconnect) return;
-      this.set('disconnected', `接続できませんでした: ${err.message}`);
+      this.set('disconnected', 'link.connectFailed', {}, { m: err.message });
       this.scheduleReconnect();
     }
   }
@@ -161,10 +160,10 @@ export class MapWandLink {
     this.state = null;
     this.tracker.reset();
     if (this.manualDisconnect) {
-      this.set('disconnected', '切断しました');
+      this.set('disconnected', 'link.disconnected');
       return;
     }
-    this.set('disconnected', '切断されました。自動で再接続を試みます（編集内容は保持）');
+    this.set('disconnected', 'link.dropped');
     this.scheduleReconnect();
   };
 
@@ -186,7 +185,7 @@ export class MapWandLink {
     if (p.type === InputType.BUTTON) this.onInput({ kind: 'button', button: p.button, action: p.action });
     const encoderOk = (p.deviceFlags & 1) === 1;
     if (encoderOk !== this.info.encoderOk || this.tracker.lost !== this.info.lost) {
-      this.set(this.info.status, this.info.message, { encoderOk });
+      this.set(this.info.status, this.info.message?.key ?? null, { encoderOk }, this.info.message?.args);
     }
   };
 
